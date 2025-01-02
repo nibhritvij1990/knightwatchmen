@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="Knight Watchmen - UCL Cricket Tournament">
+    <meta property="og:description" content="Explore the Ultimate Cricket League hosted by Knight Watchmen. Dive into the details about the tournament, rules, teams, and more.">
+    <meta property="og:image" content="cricket_tournament_banner.png">
+    <meta property="og:url" content="https://knightwatchmen.in/ucl">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Knight Watchmen">
+    <title>UCL | Knight Watchmen</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .background-image {
+            position: relative;
+            height: 100%;
+            background-image: url('ucl_bg.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+        }
+        .tint {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 80%);
+        }
+        nav {
+            background-color: transparent; /* White navbar */
+            position: absolute;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        nav ul {
+            list-style: none;
+            padding: 64px 0; /* Increase padding for a more spacious look */
+            margin: 0;
+            display: flex;
+            justify-content: center; /* Center the navigation items */
+            align-items: center;
+        }
+        nav ul li {
+            margin: 0 20px; /* Add spacing between nav items */
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        nav ul li a img {
+            width: 128px;
+        }
+        .submenu {
+            width: 250px; /* Fixed width for the submenu */
+            background-color: rgba(115, 65, 184, 0.9); /* Dark green background */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: #fff; /* White text color for submenu */
+            position: fixed;
+            top: 50%;
+            left: 48px;
+            transform: translateY(-0%);
+        }
+        .submenu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .submenu ul li a {
+            text-decoration: none;
+            color: #f0f0f0; /* Lighter text for links */
+            display: block;
+            padding: 16px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            text-transform: uppercase;
+        }
+        .submenu ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .details {
+            flex-grow: 1; /* Allow details to take remaining space */
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .details h2 {
+            color: rgb(106, 145, 114); 
+            margin: 0 0 32px;
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 5px;
+            font-size: 100px;
+            font-weight: lighter;
+            text-align: center;
+            text-shadow: 2px 2px 4px #386641;
+        }
+        .details p {
+            line-height: 1.6;
+            color: #333;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            background-color: transparent;
+            color: #fff;
+            padding: 10px 0px;
+        }
+        .social-links {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .social-links a {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        .social-links img {
+            height: 24px;
+            margin-left: 5px;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const sections = document.querySelectorAll('.details > div');
+            const menuItems = document.querySelectorAll('.submenu a');
+            sections.forEach(section => section.style.display = 'none'); // Hide all sections initially
+
+            // Show the first section by default
+            if (sections.length > 0) {
+                sections[0].style.display = 'block';
+            }
+
+            menuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    sections.forEach(section => section.style.display = 'none');
+                    const activeSection = document.querySelector(this.getAttribute('href'));
+                    if (activeSection) {
+                        activeSection.style.display = 'block';
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="background-image">
+        <div class="tint"></div>
+    </div>
+    <nav>
+        <ul>
+            <li><a href="#"><img src="UCL.png"/></a></li>
+            <li><a href="index.html"><img src="KW.png"/></a></li>
+        </ul>
+    </nav>
+        <div class="submenu">
+            <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#rules">Rules</a></li>
+                <li><a href="#teams">Teams</a></li>
+                <li><a href="#register">Register</a></li>
+                <li><a href="#past-seasons">Past Seasons</a></li>
+            </ul>
+        </div>
+        <div class="details">
+            <div id="about">
+                <h2>About the Tournament</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+            </div>
+            <div id="rules" style="display: none;">
+                <h2>Tournament Rules</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam.</p>
+            </div>
+            <div id="teams" style="display: none;">
+                <h2>Teams</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce nec tellus sed augue semper porta. Mauris massa.</p>
+            </div>
+            <div id="register" style="display: none;">
+                <h2>Register</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora torquent.</p>
+            </div>
+            <div id="past-seasons" style="display: none;">
+                <h2>Past Seasons</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sodales ligula in libero. Sed dignissim lacinia nunc.</p>
+            </div>
+        </div>
+    <footer>
+        <div class="social-links">
+            <a href="https://www.youtube.com/@KnightWatchmenHyderabad" target="_blank">@KnightWatchmenHyderabad<img src="yt_icon.png" alt="YT Logo"></a>
+        </div>
+    </footer>
+</body>
+</html>
