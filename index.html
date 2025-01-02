@@ -14,10 +14,16 @@
         .background-image {
             position: relative;
             height: 100%;
-            background-image: url('Firefly_landscape.png');
+            background-image: url('Firefly_tall.png');
             background-size: cover;
-            background-position: center -128px;
+            background-position: center center;
             background-repeat: no-repeat;
+        }
+        @media (min-aspect-ratio: 3/4) {
+            .background-image {
+                background-image: url('Firefly_landscape.png');
+                background-position: center -128px;
+            }
         }
         .tint {
             position: absolute;
@@ -32,11 +38,11 @@
             bottom: 0;
             width: 100%;
             display: flex;
-            justify-content: right;
+            justify-content: flex-end;
             align-items: center;
             background-color: transparent;
             color: #fff;
-            padding: 10px 0;
+            padding: 10px 0px;
         }
         .social-links {
             display: flex;
