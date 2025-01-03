@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="Knight Watchmen - UCL Cricket Tournament">
+    <meta property="og:description" content="Explore the Ultimate Cricket League hosted by Knight Watchmen. Dive into the details about the tournament, rules, teams, and more.">
+    <meta property="og:image" content="https://knightwatchmen.in/ucl_bg.jpg">
+    <meta property="og:url" content="https://knightwatchmen.in/ucl_home">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Knight Watchmen">
+    <link rel="shortcut icon" href="KW_ico.png" type="image/x-icon">
+    <title>UCL | Knight Watchmen</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .background-image {
+            position: relative;
+            height: 100%;
+            background-image: url('ucl_bg.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+        }
+        .tint {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 80%);
+        }
+        nav {
+            background-color: transparent; /* White navbar */
+            position: absolute;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        nav ul {
+            list-style: none;
+            padding: 64px 0; /* Increase padding for a more spacious look */
+            margin: 0;
+            display: flex;
+            justify-content: center; /* Center the navigation items */
+            align-items: center;
+        }
+        nav ul li {
+            margin: 0 20px; /* Add spacing between nav items */
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        nav ul li a img {
+            width: 128px;
+        }
+        .submenu {
+            width: 250px; /* Fixed width for the submenu */
+            background-color: rgba(88, 88, 159, 0.9); /* Dark green background */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: #fff; /* White text color for submenu */
+            position: fixed;
+            top: 50%;
+            left: 48px;
+            transform: translateY(-0%);
+        }
+        .submenu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .submenu ul li a {
+            text-decoration: none;
+            color: #f0f0f0; /* Lighter text for links */
+            display: block;
+            padding: 16px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            text-transform: uppercase;
+        }
+        .submenu ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .details {
+            flex-grow: 1; /* Allow details to take remaining space */
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.0);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.0);
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-height: 60vh;
+            overflow-y: auto;
+            line-height: 1.6;
+            width: 1000px;
+            scrollbar-color: transparent transparent;
+        }
+        .details h2 {
+            color: rgb(106, 145, 114); 
+            margin: 0 0 32px;
+            padding-bottom: 5px;
+            font-size: 100px;
+            font-weight: lighter;
+            text-align: center;
+        }
+        .details p {
+            line-height: 1.6;
+            color: #333;
+        }
+        .auction-rules-document p {
+            margin-bottom: 10px;
+        }
+        .auction-rules-document ol, .auction-rules-document ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        .auction-rules-document li {
+            margin-bottom: 5px;
+        }
+        .auction-rules-document .document-version,
+        .auction-rules-document .document-date {
+            font-size: 0.9em;
+            color: #777;
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .auction-rules-document .disclaimer {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 20px;
+            font-style: italic;
+        }
+        #teams #teams_grid {
+            display: flex;
+            justify-content: space-between;
+        }
+        #teams #teams_grid .teams_card {
+            width: 20%;
+            aspect-ratio: 1;
+            padding: 24px;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            background:
+            linear-gradient(gold 50%, transparent 0 calc(100% - 50%), black 0) 0 0 / 16px 100%,
+            linear-gradient(black 50%, transparent 0 calc(100% - 50%), gold 0) 100% 0 / 16px 100%,
+            linear-gradient(to right, gold 50%, transparent 0 calc(100% - 50%), black 0) 0 0 / 100% 16px,
+            linear-gradient(to right, black 50%, transparent 0 calc(100% - 50%), gold 0) 0 100% / 100% 16px;
+            background-repeat: no-repeat;
+        }
+        #teams #teams_grid .teams_card img {
+            width: 100%;
+            outline: 8px solid black;
+        }
+        #teams #teams_grid .teams_card .teams_card_hover_box * {
+            color: white;
+        }
+        #teams #teams_grid .teams_card .teams_card_hover_box {
+            display: none;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(88, 88, 159, 0.9);
+            cursor: pointer;
+        }
+        #teams #teams_grid .teams_card:hover .teams_card_hover_box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #register p {
+            text-align: center;
+        }
+        #past-seasons #season_selector {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: -32px;
+            margin-bottom: 32px;
+            gap: 32px;
+        }
+        #past-seasons #season_selector span {
+            background: #ccc;
+            padding: 4px 24px;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+        #past-seasons #season_selector span:hover {
+            background: rgba(214, 54, 141, 1.0);
+            color: white;
+        }
+        #past-seasons #season_selector span.active {
+            background: rgba(88, 88, 159, 1.0);
+            color: white;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            background-color: transparent;
+            color: #fff;
+            padding: 10px 0px;
+        }
+        .social-links {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .social-links a {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        .social-links img {
+            height: 24px;
+            margin-left: 5px;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const sections = document.querySelectorAll('.details > div');
+            const menuItems = document.querySelectorAll('.submenu a');
+            sections.forEach(section => section.style.display = 'none'); // Hide all sections initially
+
+            // Show the first section by default
+            if (sections.length > 0) {
+                sections[0].style.display = 'block';
+            }
+
+            menuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    sections.forEach(section => section.style.display = 'none');
+                    const activeSection = document.querySelector(this.getAttribute('href'));
+                    if (activeSection) {
+                        activeSection.style.display = 'block';
+                    }
+                });
+            });
+        });
+        function selectSeason(seasonId) {
+            // Remove active class from all spans
+            document.querySelectorAll('#season_selector span').forEach(span => {
+                span.classList.remove('active');
+            });
+
+            // Hide all season details
+            document.querySelectorAll('.season_details_item').forEach(item => {
+                item.style.display = 'none';
+            });
+
+            // Add active class to the selected season and display its details
+            document.querySelector('#season_selector span[onclick="selectSeason(\'' + seasonId + '\')"]').classList.add('active');
+            document.getElementById(seasonId).style.display = 'block';
+        }
+    </script>
+</head>
+<body>
+    <div class="background-image">
+        <div class="tint"></div>
+    </div>
+    <nav>
+        <ul>
+            <li><a href="#"><img src="UCL.png"/></a></li>
+            <li><a href="index.html"><img src="KW.png"/></a></li>
+        </ul>
+    </nav>
+        <div class="submenu">
+            <ul>
+                <li><a href="#about">About the Tournament</a></li>
+                <li><a href="#rules">Rules of Auctions</a></li>
+                <li><a href="#teams">The Franchises</a></li>
+                <li><a href="#register">Register now!</a></li>
+                <li><a href="#past-seasons">Past Seasons</a></li>
+            </ul>
+        </div>
+        <div class="details">
+            <div id="about">
+                <h2>About the Tournament</h2>
+                <p><b>Introducing the United Cricket League (UCL) - Your Ultimate Cricket Fun!</b></p>
+                    <p>Get ready to experience the electrifying atmosphere of franchise-style cricket, right here within our group! Think IPL excitement, but with a friendly and familiar twist. The United Cricket League (UCL) is our brand new, eagerly anticipated cricket tournament, meticulously designed for maximum fun and camaraderie. We kick things off with an engaging online mini-auction – your chance to be a pivotal part of building a winning team from the ground up! Forget multi-million dollar bids; in the UCL, strategy and a dash of playful rivalry are key, with a base price of just Rs. 50 for every talented player. This ensures everyone has a fair shot and the focus remains firmly on good times and clever team composition.</p>
+                    <p>Four dynamic teams will be forged through this exciting auction process, each poised to battle it out for UCL glory. Get ready for a festive dose of cricketing action! Prepare for the adrenaline rush of fast-paced T10 matches in the round-robin stage. This format promises quickfire excitement and strategic gameplay, with each team getting a fair crack at the whip, playing three matches each. This ensures everyone gets plenty of time on the pitch and the chance to showcase their skills (or hilarious lack thereof!).</p>               
+                    <p>But the fun doesn't stop there! As the round-robin concludes, the intensity will ramp up as all four teams progress to the semi-finals. That's right, no early eliminations – everyone gets a shot at the knockout stages! Here, the format shifts to the more strategic T20, demanding a blend of power hitting and tactical bowling. The winners of these high-stakes semi-finals will then clash in the ultimate T20 final, a showdown guaranteed to be filled with nail-biting moments and celebratory cheers (and maybe a few good-natured jeers!).   </p>                 
+                    <p>The UCL is more than just a cricket tournament; it's a fantastic opportunity to strengthen bonds, unleash your inner cricketer (regardless of skill level!), and create lasting memories with everyone. It's a chance to step away from the everyday, connect with colleagues and friends in a relaxed and enjoyable setting, and simply have a fantastic weekend. To make the experience even better, delicious food will be provided right at the ground throughout the tournament, so all you need to bring is your enthusiasm, your competitive spirit (the friendly kind!), and maybe your lucky charm. We can't wait to see you there!</p>
+            </div>
+            <div id="rules" class="auction-rules-document" style="display: none;">
+                <h2>Rules of the Auctions</h2>
+                    <b>Preamble:</b>
+                    <p>This document outlines the official rules and regulations governing the player auction for the United Cricket League (UCL). All participating franchises and individuals involved in the auction process are expected to adhere to these rules to ensure a fair and transparent team formation process.</p>                 
+                    <b>Article 1: Franchise Structure and Purse Allocation</b>
+                    <ol>
+                      <li>The UCL will consist of four (4) distinct franchises.</li>
+                      <li>Each franchise will be allocated a total purse of Twenty-Five Hundred (2500) Rupees for player acquisitions during the auction.</li>
+                    </ol>                 
+                    <b>Article 2: Player Base Price and Pool</b>
+                    <ol>
+                      <li>The base price for each player in the auction pool is Fifty (50) Rupees.</li>
+                      <li>The total number of players available in the auction pool is Sixty (60).</li>
+                    </ol>                 
+                    <b>Article 3: Team Composition</b>
+                    <ol>
+                      <li>Each franchise is mandated to acquire exactly Fifteen (15) players through the auction process.</li>
+                    </ol>                
+                    <b>Article 4: Bidding Increments</b>
+                    <p>The bidding process will adhere to the following incremental structure:</p>
+                    <ul>
+                      <li>From Fifty (50) Rupees up to One Hundred and Fifty (150) Rupees, bids shall increase in increments of Ten (10) Rupees.</li>
+                      <li>From One Hundred and Fifty (150) Rupees up to Three Hundred and Fifty (350) Rupees, bids shall increase in increments of Twenty (20) Rupees.</li>
+                      <li>From Three Hundred and Fifty (350) Rupees up to Eight Hundred (800) Rupees, bids shall increase in increments of Fifty (50) Rupees.</li>
+                      <li>Above Eight Hundred (800) Rupees, bids shall increase in increments of One Hundred (100) Rupees.</li>
+                    </ul>
+                    <p>Jump bids, where a franchise bids an amount exceeding the permissible increment, are strictly prohibited and will not be accepted. The auctioneer's decision on the validity of a bid will be final.</p>                
+                    <b>Article 5: Auction Sequence and Player Categories</b>
+                    <ol>
+                      <li>The auction process will commence with each franchise nominating and acquiring either a Captain or a Trainer.</li>
+                      <li>Following the Captain/Trainer selections, the auction of eight (8) marquee players, designated as "Starter Pokemon," will take place. These players will be auctioned individually.</li>
+                      <li>The remaining players will be categorized into the following groups:
+                        <ul>
+                          <li>Batsmen</li>
+                          <li>Bowlers</li>
+                          <li>Batting All-rounders</li>
+                          <li>Bowling All-rounders</li>
+                          <li>Wicket-keepers</li>
+                        </ul>
+                      </li>
+                      <li>The order in which these player groups are presented for auction will be decided and communicated beforehand.</li>
+                      <li>Within each player group, the order in which individual players are put up for auction will be determined randomly at the time of the auction.</li>
+                    </ol>                 
+                    <b>Article 6: Retentions and Right to Match (RTM)</b>
+                    <ol>
+                      <li>The concept of player retentions from previous seasons (if any) is not applicable for this auction.</li>
+                      <li>The Right to Match (RTM) card, allowing franchises to match the highest bid for a former player, will not be in effect for this auction.</li>
+                    </ol>                
+                    <b>Article 7: Unsold Players</b>
+                    <ol>
+                      <li>Any players who remain unsold after the initial auction rounds for all predefined player groups are completed will be combined into a single "Unsold Players" category.</li>
+                      <li>These unsold players will be put up for auction again. Franchises will have the opportunity to bid on these players to fulfill their mandatory team quota of fifteen (15) players.</li>
+                    </ol>                
+                    <b>Article 8: Mandatory Player Acquisition</b>
+                    <ol>
+                      <li>Each of the four (4) franchises is obligated to acquire a total of fifteen (15) players by the conclusion of the auction process.</li>
+                      <li>The auction will continue until all sixty (60) players have been successfully acquired by the participating franchises.</li>
+                    </ol>                
+                    <b>Article 9: General Conduct</b>
+                    <ol>
+                      <li>All participants are expected to conduct themselves in a sportsmanlike and respectful manner throughout the auction process.</li>
+                      <li>Any disputes or clarifications regarding the auction rules will be addressed by the designated auction organizers, whose decisions will be final.</li>
+                    </ol>                
+                    <p class="disclaimer"><strong>Disclaimer:</strong> These rules are designed to facilitate a smooth and enjoyable auction process for the UCL. The organizers reserve the right to make minor adjustments to these rules if deemed necessary, with prior communication to all participating franchises.</p>
+            </div>
+            <div id="teams" style="display: none;">
+                <h2>Meet the Franchises</h2>
+                <div id="teams_grid">
+                    <div class="teams_card">
+                        <img src="sop.jpg" />
+                        <div class="teams_card_hover_box">
+                            <b>Sons of Pitches</b>
+                            <p>Nibhrit Vij</p>
+                        </div>
+                    </div>
+                    <div class="teams_card">
+                        <img src="hod.jpg" />
+                        <div class="teams_card_hover_box">
+                            <b>House of Dragons</b>
+                            <p>Venu Kondoor</p>
+                        </div>
+                    </div>
+                    <div class="teams_card">
+                        <img src="skm.jpg" />
+                        <div class="teams_card_hover_box">
+                            <b>Sir_King Makers</b>
+                            <p>Pradeep Sirki</p>
+                        </div>
+                    </div>
+                    <div class="teams_card">
+                        <img src="ca.jpg" />
+                        <div class="teams_card_hover_box">
+                            <b>Cricket Addicts</b>
+                            <p>Vamshidhar Banda</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="register" style="display: none;">
+                <h2>Auction Registration</h2>
+                <p>Registration for the auctions is currently closed, but we expect to open very soon!</p>
+            </div>
+            <div id="past-seasons" style="display: none;">
+                <h2>Past Seasons</h2>
+                <div id="season_selector">
+                    <span class="active" onclick="selectSeason('season-1')">Season 1</span> 
+                    <span onclick="selectSeason('season-2')">Season 2</span>
+                </div>
+                <div id="season_details">
+                    <div class="season_details_item" id="season-1">
+                        Dates: 25th and 26th December, 2025<br />
+                        Winner(s): House of Dragons and Sir_King Makers
+                    </div>
+                    <div class="season_details_item" id="season-2" style="display: none;">
+                        Coming Soon!
+                    </div>
+                </div>
+            </div>
+        </div>
+    <footer>
+        <div class="social-links">
+            <a href="https://www.youtube.com/@KnightWatchmenHyderabad" target="_blank">@KnightWatchmenHyderabad<img src="yt_icon.png" alt="YT Logo"></a>
+        </div>
+    </footer>
+</body>
+</html>
