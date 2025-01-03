@@ -143,7 +143,7 @@
             margin-top: 20px;
             font-style: italic;
         }
-        #teams #teams_grid {
+        #teams #teams_grid, .season_details_item > div {
             display: flex;
             justify-content: space-between;
         }
@@ -155,7 +155,6 @@
             box-sizing: border-box;
             overflow: hidden;
             background: linear-gradient(135deg, rgba(235,194,20,1) 0%, rgba(235,194,20,1) 25%, rgba(0,0,0,1) 25%, rgba(0,0,0,1) 80%, rgba(235,194,20,1) 80%, rgba(235,194,20,1) 100%);
-            background-repeat: no-repeat;
         }
         #teams #teams_grid .teams_card img {
             width: 100%;
@@ -206,6 +205,220 @@
         #past-seasons #season_selector span.active {
             background: rgba(88, 88, 159, 1.0);
             color: white;
+        }
+        .season_teams > div {
+            display: block;
+            width: 24%;
+            border-radius: 4px;
+            position: relative;
+        }
+        .season_teams div img {
+            display: block;
+            width: 100%;
+            border-radius: 4px;
+        }
+        .season_teams img:hover {
+            transform: scale(1);
+        }
+        .season_teams div.champion::after {
+            content: "";
+            position: absolute;
+            top: -24px;
+            right: -12px;
+            height: 72px;
+            width: 42px;
+            background: url(trophy.png) no-repeat;
+            background-size: contain;
+        }
+        .season_tables {
+            display: flex;
+            justify-content: space-between;
+            margin: 32px 0;
+        }
+        .season_tables > div {
+            width: 48%; /* Adjusted for better spacing */
+            padding: 10px;
+        }
+        .table {
+            display: grid;
+            grid-template-columns: 3fr repeat(5, 1fr) 2fr; /* 7 columns for League Stage */
+            font-size: 0.9em;
+        }
+        .table-header {
+            font-weight: bold;
+            color: #333;
+            background-color: #ddd;
+            padding: 8px 4px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .table-cell {
+            padding: 8px 4px; /* Padding for better text alignment */
+            text-align: center;
+        }
+        .table-cell.blackened {
+            background-color: #ddd;
+        }
+        .captain-title {
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .season_leaderboard > div {
+            width: 20%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        .season_leaderboard_item {
+            position: relative;
+        }
+        .season_leaderboard_item:nth-child(1)::before {
+            content: "Most Valuable Player";
+            position: absolute;
+            top: 8px;
+            right: 16px;
+            z-index: 1;
+        }
+        .season_leaderboard_item:nth-child(2)::before {
+            content: "Best Batsman";
+            position: absolute;
+            top: 154px;
+            right: 12px;
+            z-index: 1;
+        }
+        .season_leaderboard_item:nth-child(3)::before {
+            content: "Best Bowler";
+            position: absolute;
+            top: 154px;
+            right: 12px;
+            z-index: 1;
+        }
+        .season_leaderboard_item:nth-child(4)::before {
+            content: "Best Fielder";
+            position: absolute;
+            top: 154px;
+            right: 12px;
+            z-index: 1;
+        }
+        .container {
+            position: relative;
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 64px;
+            width: 100%;
+        }
+        .season_leaderboard_item .container .card {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #232323;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 150px;
+        }
+        .season_leaderboard_item:first-child .container .card {
+            height: 450px;
+            margin-top: 0;
+        }
+        .container .card:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1BBFE9;
+            clip-path: circle(150px at 80% 20%);
+            transition: 0.5s ease-in-out;
+        }
+        .container .card:hover:before {
+            clip-path: circle(300px at 80% -20%);
+        }
+        .container .card:after {
+            content: "UCL";
+            position: absolute;
+            bottom: 5%;
+            left: 0%;
+            font-size: 8em;
+            font-weight: 800;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.04);
+
+        }
+        .container .card .imgBx {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            width: 100%;
+            height: 100%;
+            transition: .5s;
+        }
+        .container .card:hover .imgBx {
+            top: 0%;
+            transform: translateY(-8%) scale(1.25);
+        }
+        .container .card .imgBx img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -60%) rotate(0deg);
+            width: 60%;
+        }
+        .container .card .contentBx {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 80px;
+            text-align: center;
+            transition: 1s;
+            z-index: 1001;
+        }
+        .season_leaderboard_item:nth-child(1) .container .card .contentBx {
+            height: 100px;
+        }
+        .container .card:hover .contentBx {
+            height: 100px;
+            transform: scale(1.2);
+        }
+        .container .card .contentBx h2 {
+            position: relative;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #fff;
+            font-size: 16px;
+            margin: 0;
+        }
+        .container .card .contentBx .size,
+        .container .card .contentBx .color {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: .5s;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .container .card:hover .contentBx .size {
+            opacity: 1;
+            visibility: visible;
+            transition-delay: .5s;
+        }
+        .container .card:hover .contentBx .color {
+            opacity: 1;
+            visibility: visible;
+            transition-delay: .6s;
+        }
+        .container .card .contentBx .size h3,
+        .container .card .contentBx .color h3 {
+            color: white;
+            font-weight: 300;
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0px;
         }
         footer {
             position: fixed;
@@ -412,8 +625,150 @@
                 </div>
                 <div id="season_details">
                     <div class="season_details_item" id="season-1">
-                        Dates: 25th and 26th December, 2025<br />
-                        Winner(s): House of Dragons and Sir_King Makers
+                        <div class="season_teams">
+                            <div><img src="season1/sop.jpeg" alt="Sons of Pitches"/></div>
+                            <div class="champion"><img src="season1/hod.jpeg" alt="House of Dragons" /></div>
+                            <div class="champion"><img src="season1/skm.jpeg" alt="Sir_King Makers" /></div>
+                            <div><img src="season1/ca.jpeg" alt="Cricket Addicts" /></div>
+                        </div>
+                        <div class="season_tables">
+                            <div>
+                                <div class="captain-title">League Stage</div>
+                                <div class="table" aria-label="League Stage">
+                                    <div class="table-header">Team</div>
+                                    <div class="table-header">M</div>
+                                    <div class="table-header">W</div>
+                                    <div class="table-header">L</div>
+                                    <div class="table-header">NR</div>
+                                    <div class="table-header">Pts</div>
+                                    <div class="table-header">NRR</div>
+                                    
+                                    <div class="table-cell">Sir_King Makers</div>
+                                    <div class="table-cell">3</div>
+                                    <div class="table-cell">2</div>
+                                    <div class="table-cell">0</div>
+                                    <div class="table-cell">1</div>
+                                    <div class="table-cell">5</div>
+                                    <div class="table-cell">2.650</div>
+                                    
+                                    <div class="table-cell">House of Dragons</div>
+                                    <div class="table-cell">3</div>
+                                    <div class="table-cell">1</div>
+                                    <div class="table-cell">1</div>
+                                    <div class="table-cell">1</div>
+                                    <div class="table-cell">3</div>
+                                    <div class="table-cell">0.942</div>
+
+                                    <div class="table-cell">Sons of Pitches</div>
+                                    <div class="table-cell">3</div>
+                                    <div class="table-cell">1</div>
+                                    <div class="table-cell">2</div>
+                                    <div class="table-cell">0</div>
+                                    <div class="table-cell">2</div>
+                                    <div class="table-cell">-0.875</div>
+
+                                    <div class="table-cell">Cricket Addicts</div>
+                                    <div class="table-cell">3</div>
+                                    <div class="table-cell">1</div>
+                                    <div class="table-cell">2</div>
+                                    <div class="table-cell">0</div>
+                                    <div class="table-cell">2</div>
+                                    <div class="table-cell">-2.146</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="captain-title">Knockout Rounds</div>
+                                <div class="table" aria-label="Knockouts" style="grid-template-columns: 3fr 6fr 1fr;">
+                                    <div class="table-header">Match</div>
+                                    <div class="table-header">Teams</div>
+                                    <div class="table-header">Winner</div>
+                                    
+                                    <div class="table-cell">Semi-final 1</div>
+                                    <div class="table-cell">Sons of Pitches vs House of Dragons</div>
+                                    <div class="table-cell">HOD</div>
+
+                                    <div class="table-cell">Semi-final 2</div>
+                                    <div class="table-cell">Cricket Addicts vs Sir_King Makers</div>
+                                    <div class="table-cell">SKM</div>
+
+                                    <div class="table-cell blackened"></div>
+                                    <div class="table-cell blackened"></div>
+                                    <div class="table-cell blackened"></div>
+
+                                    <div class="table-cell">FINAL</div>
+                                    <div class="table-cell">Sir_King Makers vs House of Dragons</div>
+                                    <div class="table-cell">N/R</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="season_leaderboard">
+                            <div class="season_leaderboard_item" style="width: 30%;">
+                                <div class="container">
+                                    <div class="card">
+                                        <div class="imgBx">
+                                            <img src="season1/mvp.png" alt="MVP">
+                                        </div>
+                                        <div class="contentBx">
+                                            <h2>Chanukya Kotagiri</h2>
+                                            <div class="size">
+                                                <h3>Runs: 61  Avg: 30.50  SR: 141.86</h3>
+                                            </div>
+                                            <div class="color">
+                                                <h3>Wkts: 7  Econ: 8.00</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="season_leaderboard_item">
+                                <div class="container">
+                                    <div class="card">
+                                        <div class="imgBx">
+                                            <img src="season1/best_bat.png" alt="MVP">
+                                        </div>
+                                        <div class="contentBx">
+                                            <h2>Abhishek Sai</h2>
+                                            <div class="size">
+                                                <h3>Runs: 148<br/>Avg: 37.00<br/>SR: 211.43</h3>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="season_leaderboard_item">
+                                <div class="container">
+                                    <div class="card">
+                                        <div class="imgBx">
+                                            <img src="season1/best_bowl.png" alt="MVP">
+                                        </div>
+                                        <div class="contentBx">
+                                            <h2>Chanukya Kotagiri</h2>
+                                            <div class="size">
+                                                <h3>Wkts: 7<br/>Econ: 8.00</h3>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="season_leaderboard_item">
+                                <div class="container">
+                                    <div class="card">
+                                        <div class="imgBx">
+                                            <img src="season1/best_field.png" alt="MVP">
+                                        </div>
+                                        <div class="contentBx">
+                                            <h2>Harish Reddy</h2>
+                                            <div class="size">
+                                                <h3>Dismissals: 6<br/>Catches: 6</h3>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="season_details_item" id="season-2" style="display: none;">
                         Coming Soon!
