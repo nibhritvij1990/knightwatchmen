@@ -1,784 +1,1002 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="Knight Watchmen - UCL Cricket Tournament">
-    <meta property="og:description" content="Explore the Ultimate Cricket League hosted by Knight Watchmen. Dive into the details about the tournament, rules, teams, and more.">
-    <meta property="og:image" content="https://knightwatchmen.in/ucl_bg.jpg">
-    <meta property="og:url" content="https://knightwatchmen.in/ucl_home">
-    <meta property="og:type" content="article">
-    <meta property="og:site_name" content="Knight Watchmen">
-    <link rel="shortcut icon" href="KW_ico.png" type="image/x-icon">
-    <title>UCL | Knight Watchmen</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .background-image {
-            position: relative;
-            height: 100%;
-            background-image: url('ucl_bg.jpg');
-            background-size: cover;
-            background-position: center center;
-            background-repeat: no-repeat;
-        }
-        .tint {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 80%);
-        }
+  <meta charset="UTF-8">
+  <!-- Viewport meta ensures the browser sets the page width based on device width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="Knight Watchmen - UCL Cricket Tournament">
+  <meta property="og:description" content="Explore the Ultimate Cricket League hosted by Knight Watchmen. Dive into the details about the tournament, rules, teams, and more.">
+  <meta property="og:image" content="https://knightwatchmen.in/ucl_bg.jpg">
+  <meta property="og:url" content="https://knightwatchmen.in/ucl_home">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Knight Watchmen">
+  <link rel="shortcut icon" href="KW_ico.png" type="image/x-icon">
+  <title>UCL | Knight Watchmen</title>
+
+  <style>
+    /* Base */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      position: relative;
+    }
+
+    .background-image {
+      position: fixed;
+      height: 100%;
+      width: 100%;
+      background-image: url('ucl_bg.jpg');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+    }
+
+    .tint {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 80%);
+    }
+
+    /* Navbar */
+    nav {
+      background-color: transparent;
+      position: absolute;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: center; 
+      align-items: center;
+    }
+
+    nav ul {
+      list-style: none;
+      padding: 32px 0;
+      margin: 0;
+      display: flex;
+      justify-content: center; 
+      align-items: center;
+    }
+
+    nav ul li {
+      margin: 0 0px;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      padding: 10px 15px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav ul li a img {
+      width: 128px;
+    }
+
+    /* Submenu */
+    .submenu {
+      background-color: rgba(88, 88, 159, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      color: #fff; 
+      
+    }
+
+    .submenu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .submenu ul li a {
+        text-decoration: none;
+        color: #f0f0f0;
+        display: block;
+        padding: 16px 15px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+        text-transform: uppercase;
+        max-width: 100px;
+        font-weight: unset;
+        font-size: 0.8rem;
+        box-sizing: border-box;
+    }
+
+    .submenu ul li a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Details container */
+    .details {
+      position: fixed;
+      top: 160px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-height: calc(100vh - 320px);
+      overflow-y: auto;
+      line-height: 1.6;
+      /* Instead of a fixed width of 1000px, let it shrink on small screens: */
+      width: 90%;
+      max-width: 1000px;
+      padding: 0 0 50px 0;
+      background: rgba(255, 255, 255, 0.0);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.0);
+      scrollbar-color: transparent transparent;
+    }
+
+    .details h2 {
+      color: rgb(106, 145, 114); 
+      margin: 0 0 32px;
+      padding-bottom: 5px;
+      font-size: 100px;
+      font-weight: lighter;
+      text-align: center;
+    }
+
+    .details p {
+      line-height: 1.6;
+      color: #333;
+    }
+
+    /* Auction rules */
+    .auction-rules-document p {
+      margin-bottom: 10px;
+    }
+
+    .auction-rules-document ol, .auction-rules-document ul {
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    .auction-rules-document li {
+      margin-bottom: 5px;
+    }
+
+    .auction-rules-document .document-version,
+    .auction-rules-document .document-date {
+      font-size: 0.9em;
+      color: #777;
+      text-align: right;
+      margin-bottom: 10px;
+    }
+
+    .auction-rules-document .disclaimer {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 20px;
+      font-style: italic;
+    }
+
+    /* Teams Grid */
+    #teams #teams_grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    #teams #teams_grid .teams_card {
+      aspect-ratio: 1; 
+      padding: 24px;
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: linear-gradient(
+        135deg,
+        rgba(235,194,20,1) 0%, 
+        rgba(235,194,20,1) 25%, 
+        rgba(0,0,0,1) 25%, 
+        rgba(0,0,0,1) 80%, 
+        rgba(235,194,20,1) 80%, 
+        rgba(235,194,20,1) 100%
+      );
+    }
+
+    #teams #teams_grid .teams_card img {
+      width: 100%;
+      outline: 8px solid black;
+    }
+
+    #teams #teams_grid .teams_card .teams_card_hover_box * {
+      color: white;
+    }
+
+    #teams #teams_grid .teams_card .teams_card_hover_box {
+      display: none;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(88, 88, 159, 0.9);
+      cursor: pointer;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    #teams #teams_grid .teams_card:hover .teams_card_hover_box {
+      display: flex;
+    }
+
+    /* Register / Past Seasons */
+    #register p {
+      text-align: center;
+    }
+
+    #past-seasons #season_selector {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: -32px;
+      margin-bottom: 32px;
+      gap: 32px;
+    }
+
+    #past-seasons #season_selector span {
+      background: #ccc;
+      padding: 4px 24px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+
+    #past-seasons #season_selector span:hover {
+      background: rgba(214, 54, 141, 1.0);
+      color: white;
+    }
+
+    #past-seasons #season_selector span.active {
+      background: rgba(88, 88, 159, 1.0);
+      color: white;
+    }
+
+    .season_teams {
+        display: flex;
+        gap: 8px;
+    }
+
+    .season_teams > div {
+      display: block;
+      width: 24%;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .season_teams div img {
+      display: block;
+      width: 100%;
+      border-radius: 4px;
+    }
+
+    .season_teams div.champion::after {
+      content: "";
+      position: absolute;
+      top: -24px;
+      right: -12px;
+      height: 72px;
+      width: 42px;
+      background: url(trophy.png) no-repeat;
+      background-size: contain;
+    }
+
+    .season_tables {
+      display: flex;
+      justify-content: space-between;
+      margin: 32px 0;
+    }
+
+    .season_tables > div {
+      width: 48%; 
+      padding: 10px;
+    }
+
+    .table {
+      display: grid;
+      grid-template-columns: 3fr repeat(5, 1fr) 2fr; /* 7 columns for League Stage */
+      font-size: 0.9em;
+    }
+
+    .table-header {
+      font-weight: bold;
+      color: #333;
+      background-color: #ddd;
+      padding: 8px 4px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .table-cell {
+      padding: 8px 4px; 
+      text-align: center;
+    }
+
+    .table-cell.blackened {
+      background-color: #ddd;
+    }
+
+    .captain-title {
+      font-size: 1.2em;
+      color: #555;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .season_leaderboard {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 64px;
+    }
+
+    .season_leaderboard > div {
+      width: 20%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .season_leaderboard_item {
+      position: relative;
+    }
+
+    .season_leaderboard_item:nth-child(1)::before {
+      content: "Most Valuable Player";
+      position: absolute;
+      top: 8px;
+      right: 16px;
+      z-index: 1;
+    }
+    .season_leaderboard_item:nth-child(2)::before {
+      content: "Best Batsman";
+      position: absolute;
+      top: 154px;
+      right: 12px;
+      z-index: 1;
+    }
+    .season_leaderboard_item:nth-child(3)::before {
+      content: "Best Bowler";
+      position: absolute;
+      top: 154px;
+      right: 12px;
+      z-index: 1;
+    }
+    .season_leaderboard_item:nth-child(4)::before {
+      content: "Best Fielder";
+      position: absolute;
+      top: 154px;
+      right: 12px;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .season_leaderboard_item .container .card {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      background: #232323;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 150px;
+    }
+
+    .season_leaderboard_item:first-child .container .card {
+      height: 450px;
+      margin-top: 0;
+    }
+
+    .container .card:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #1BBFE9;
+      clip-path: circle(150px at 80% 20%);
+      transition: 0.5s ease-in-out;
+    }
+
+    .container .card:hover:before {
+      clip-path: circle(300px at 80% -20%);
+    }
+
+    .container .card:after {
+      content: "UCL";
+      position: absolute;
+      bottom: 5%;
+      left: 0%;
+      font-size: 8em;
+      font-weight: 800;
+      font-style: italic;
+      color: rgba(255, 255, 255, 0.04);
+    }
+
+    .container .card .imgBx {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1000;
+      width: 100%;
+      height: 100%;
+      transition: .5s;
+    }
+
+    .container .card:hover .imgBx {
+      top: 0%;
+      transform: translateY(-8%) scale(1.25);
+    }
+
+    .container .card .imgBx img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%) rotate(0deg);
+      width: 60%;
+    }
+
+    .container .card .contentBx {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 80px;
+      text-align: center;
+      transition: 1s;
+      z-index: 1001;
+    }
+
+    .season_leaderboard_item:nth-child(1) .container .card .contentBx {
+      height: 100px;
+    }
+
+    .container .card:hover .contentBx {
+      height: 100px;
+      transform: scale(1.2);
+    }
+
+    .container .card .contentBx h2, .container .card .contentBx h3 {
+      position: relative;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: #fff;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .container .card .contentBx .size,
+    .container .card .contentBx .color {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: .5s;
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .container .card:hover .contentBx .size {
+      opacity: 1;
+      visibility: visible;
+      transition-delay: .5s;
+    }
+
+    
+
+    .container .card:hover .contentBx .color {
+      opacity: 1;
+      visibility: visible;
+      transition-delay: .6s;
+    }
+
+    /* Footer */
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      background-color: transparent;
+      color: #fff;
+      padding: 10px 0px;
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .social-links a {
+      color: white;
+      margin: 0 10px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .social-links img {
+      height: 24px;
+      margin-left: 5px;
+    }
+
+    /* MEDIA QUERIES – Adjust layout for mobile/tablet */
+    @media (max-width: 768px) {
         nav {
-            background-color: transparent; /* White navbar */
-            position: absolute;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-        }
-        nav ul {
-            list-style: none;
-            padding: 64px 0; /* Increase padding for a more spacious look */
-            margin: 0;
-            display: flex;
-            justify-content: center; /* Center the navigation items */
-            align-items: center;
-        }
-        nav ul li {
-            margin: 0 20px; /* Add spacing between nav items */
-        }
-        nav ul li a {
-            text-decoration: none;
-            color: #333;
-            font-weight: bold;
-            padding: 10px 15px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-        nav ul li a img {
-            width: 128px;
-        }
-        .submenu {
-            width: min(250px, 16vw);
-            background-color: rgba(88, 88, 159, 0.9); /* Dark green background */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            color: #fff; /* White text color for submenu */
-            position: fixed;
-            top: 50%;
-            left: 48px;
-            transform: translateY(-0%);
-        }
-        .submenu ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .submenu ul li a {
-            text-decoration: none;
-            color: #f0f0f0; /* Lighter text for links */
-            display: block;
-            padding: 16px 15px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-            text-transform: uppercase;
-        }
-        .submenu ul li a:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        .details {
-            flex-grow: 1; /* Allow details to take remaining space */
-            padding: 24px;
-            background: rgba(255, 255, 255, 0.0);
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.0);
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            max-height: 60vh;
-            overflow-y: auto;
-            line-height: 1.6;
-            scrollbar-color: transparent transparent;
-        }
-        .details h2 {
-            color: rgb(106, 145, 114); 
-            margin: 0 0 32px;
-            padding-bottom: 5px;
-            font-size: 100px;
-            font-weight: lighter;
-            text-align: center;
-        }
-        .details p {
-            line-height: 1.6;
-            color: #333;
-        }
-        .auction-rules-document p {
-            margin-bottom: 10px;
-        }
-        .auction-rules-document ol, .auction-rules-document ul {
-            margin-left: 20px;
-            margin-bottom: 10px;
-        }
-        .auction-rules-document li {
-            margin-bottom: 5px;
-        }
-        .auction-rules-document .document-version,
-        .auction-rules-document .document-date {
-            font-size: 0.9em;
-            color: #777;
-            text-align: right;
-            margin-bottom: 10px;
-        }
-        .auction-rules-document .disclaimer {
-            font-size: 0.9em;
-            color: #555;
-            margin-top: 20px;
-            font-style: italic;
-        }
-        #teams #teams_grid, .season_details_item > div {
-            display: flex;
-            justify-content: space-between;
-        }
-        #teams #teams_grid .teams_card {
-            width: 20%;
-            aspect-ratio: 1;
-            padding: 24px;
-            position: relative;
-            box-sizing: border-box;
-            overflow: hidden;
-            background: linear-gradient(135deg, rgba(235,194,20,1) 0%, rgba(235,194,20,1) 25%, rgba(0,0,0,1) 25%, rgba(0,0,0,1) 80%, rgba(235,194,20,1) 80%, rgba(235,194,20,1) 100%);
-        }
-        #teams #teams_grid .teams_card img {
-            width: 100%;
-            outline: 8px solid black;
-        }
-        #teams #teams_grid .teams_card .teams_card_hover_box * {
-            color: white;
-        }
-        #teams #teams_grid .teams_card .teams_card_hover_box {
-            display: none;
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(88, 88, 159, 0.9);
-            cursor: pointer;
-        }
-        #teams #teams_grid .teams_card:hover .teams_card_hover_box {
-            display: flex;
-            justify-content: center;
-            align-items: center;
             flex-direction: column;
-        }
-        #register p {
-            text-align: center;
-        }
-        #past-seasons #season_selector {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: -32px;
-            margin-bottom: 32px;
-            gap: 32px;
-        }
-        #past-seasons #season_selector span {
-            background: #ccc;
-            padding: 4px 24px;
-            cursor: pointer;
-            border-radius: 2px;
-            transition: 0.3s;
-        }
-        #past-seasons #season_selector span:hover {
-            background: rgba(214, 54, 141, 1.0);
-            color: white;
-        }
-        #past-seasons #season_selector span.active {
-            background: rgba(88, 88, 159, 1.0);
-            color: white;
-        }
-        .season_teams > div {
-            display: block;
-            width: 24%;
-            border-radius: 4px;
             position: relative;
         }
-        .season_teams div img {
-            display: block;
-            width: 100%;
-            border-radius: 4px;
-        }
-        .season_teams img:hover {
-            transform: scale(1);
-        }
-        .season_teams div.champion::after {
-            content: "";
-            position: absolute;
-            top: -24px;
-            right: -12px;
-            height: 72px;
-            width: 42px;
-            background: url(trophy.png) no-repeat;
-            background-size: contain;
-        }
-        .season_tables {
-            display: flex;
-            justify-content: space-between;
-            margin: 32px 0;
-        }
-        .season_tables > div {
-            width: 48%; /* Adjusted for better spacing */
-            padding: 10px;
-        }
-        .table {
-            display: grid;
-            grid-template-columns: 3fr repeat(5, 1fr) 2fr; /* 7 columns for League Stage */
-            font-size: 0.9em;
-        }
-        .table-header {
-            font-weight: bold;
-            color: #333;
-            background-color: #ddd;
-            padding: 8px 4px;
-            border-radius: 4px;
-            text-align: center;
-        }
-        .table-cell {
-            padding: 8px 4px; /* Padding for better text alignment */
-            text-align: center;
-        }
-        .table-cell.blackened {
-            background-color: #ddd;
-        }
-        .captain-title {
-            font-size: 1.2em;
-            color: #555;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .season_leaderboard > div {
-            width: 20%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-end;
-        }
-        .season_leaderboard_item {
-            position: relative;
-        }
-        .season_leaderboard_item:nth-child(1)::before {
-            content: "Most Valuable Player";
-            position: absolute;
-            top: 8px;
-            right: 16px;
-            z-index: 1;
-        }
-        .season_leaderboard_item:nth-child(2)::before {
-            content: "Best Batsman";
-            position: absolute;
-            top: 154px;
-            right: 12px;
-            z-index: 1;
-        }
-        .season_leaderboard_item:nth-child(3)::before {
-            content: "Best Bowler";
-            position: absolute;
-            top: 154px;
-            right: 12px;
-            z-index: 1;
-        }
-        .season_leaderboard_item:nth-child(4)::before {
-            content: "Best Fielder";
-            position: absolute;
-            top: 154px;
-            right: 12px;
-            z-index: 1;
-        }
-        .container {
-            position: relative;
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 64px;
-            width: 100%;
-        }
-        .season_leaderboard_item .container .card {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            background: #232323;
-            border-radius: 20px;
-            overflow: hidden;
-            margin-top: 150px;
-        }
-        .season_leaderboard_item:first-child .container .card {
-            height: 450px;
-            margin-top: 0;
-        }
-        .container .card:before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #1BBFE9;
-            clip-path: circle(150px at 80% 20%);
-            transition: 0.5s ease-in-out;
-        }
-        .container .card:hover:before {
-            clip-path: circle(300px at 80% -20%);
-        }
-        .container .card:after {
-            content: "UCL";
-            position: absolute;
-            bottom: 5%;
-            left: 0%;
-            font-size: 8em;
-            font-weight: 800;
-            font-style: italic;
-            color: rgba(255, 255, 255, 0.04);
+      /* NAV: stack items vertically */
+      nav ul {
+        flex-direction: row;
+        padding: 0px 0;
+      }
+      nav ul li {
+        margin: 10px 0;
+      }
+      nav ul li a img {
+        width: 100px;
+      }
 
-        }
-        .container .card .imgBx {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 1000;
-            width: 100%;
-            height: 100%;
-            transition: .5s;
-        }
-        .container .card:hover .imgBx {
-            top: 0%;
-            transform: translateY(-8%) scale(1.25);
-        }
-        .container .card .imgBx img {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -60%) rotate(0deg);
-            width: 60%;
-        }
-        .container .card .contentBx {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 80px;
-            text-align: center;
-            transition: 1s;
-            z-index: 1001;
-        }
-        .season_leaderboard_item:nth-child(1) .container .card .contentBx {
-            height: 100px;
-        }
-        .container .card:hover .contentBx {
-            height: 100px;
-            transform: scale(1.2);
-        }
-        .container .card .contentBx h2 {
-            position: relative;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: #fff;
-            font-size: 16px;
-            margin: 0;
-        }
-        .container .card .contentBx .size,
-        .container .card .contentBx .color {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: .5s;
-            opacity: 0;
-            visibility: hidden;
-        }
-        .container .card:hover .contentBx .size {
-            opacity: 1;
-            visibility: visible;
-            transition-delay: .5s;
-        }
-        .container .card:hover .contentBx .color {
-            opacity: 1;
-            visibility: visible;
-            transition-delay: .6s;
-        }
-        .container .card .contentBx .size h3,
-        .container .card .contentBx .color h3 {
-            color: white;
-            font-weight: 300;
-            font-size: 8px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin: 0px;
-        }
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            background-color: transparent;
-            color: #fff;
-            padding: 10px 0px;
-        }
-        .social-links {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .social-links a {
-            color: white;
-            margin: 0 10px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-        }
-        .social-links img {
-            height: 24px;
-            margin-left: 5px;
-        }
-    </style>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const sections = document.querySelectorAll('.details > div');
-            const menuItems = document.querySelectorAll('.submenu a');
-            sections.forEach(section => section.style.display = 'none'); // Hide all sections initially
+      .submenu {
+        transform: none;
+        margin-top: 10px;
+        width: 90%;
+      }
+      .submenu ul {
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+      }
+      .submenu ul li a {
+        text-align: center;
+        max-width: fit-content;
+        white-space: nowrap;
+        padding: 0;
+      }
 
-            // Show the first section by default
-            if (sections.length > 0) {
-                sections[0].style.display = 'block';
-            }
+      /* DETAILS: remove fixed positioning so it can scroll naturally */
+      .details {
+        top: unset;
+        max-height: calc(100vh - 420px);
+        position: relative;
+      }
+      .details h2 {
+        font-size: 2.5rem; /* Larger text on mobile can get unwieldy; adjust as needed */
+      }
 
-            menuItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    sections.forEach(section => section.style.display = 'none');
-                    const activeSection = document.querySelector(this.getAttribute('href'));
-                    if (activeSection) {
-                        activeSection.style.display = 'block';
-                    }
-                });
-            });
+      /* TEAMS GRID: 2 columns on smaller screens (or 1 column if you prefer) */
+      #teams #teams_grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+      }
+
+      .season_teams {
+        flex-wrap: wrap;
+      }
+      .season_teams > div {
+        width: 48%;
+      }
+
+      .season_tables {
+        flex-direction: column;
+        font-size: 14px;
+      }
+      .season_tables > div {
+        width: 100%;
+        margin-bottom: 16px;
+        padding: 0;
+      }
+      .season_tables > div:nth-child(2) .table {
+        grid-template-columns: 2.5fr 6.5fr 1fr !important;
+      }
+      .season_leaderboard {
+        flex-direction: column;
+        align-items: center;
+      }
+      .season_leaderboard > div {
+        width: min(300px, 90%) !important;
+        margin-bottom: 20px;
+        align-items: center;
+      }
+
+      .season_leaderboard_item .container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .container .card {
+        margin-top: 20px;
+        width: 80%;
+        height: 350px;
+        margin-top: 0 !important;
+      }
+
+      /* For the first card (MVP), let it adapt */
+      .season_leaderboard_item:first-child .container .card {
+        height: 350px;
+      }
+      .season_leaderboard_item::before {
+        top: 4px !important;
+        }
+
+      .container .card .imgBx {
+        height: auto;
+        transform: none;
+      }
+
+      .container .card:hover .imgBx {
+        transform: translate(0px, 120px) scale(1.25);
+      }
+
+      
+    }
+  </style>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const sections = document.querySelectorAll('.details > div');
+      const menuItems = document.querySelectorAll('.submenu a');
+      sections.forEach(section => section.style.display = 'none'); // Hide all sections initially
+
+      // Show the first section by default
+      if (sections.length > 0) {
+        sections[0].style.display = 'block';
+      }
+
+      menuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          sections.forEach(section => section.style.display = 'none');
+          const activeSection = document.querySelector(this.getAttribute('href'));
+          if (activeSection) {
+            activeSection.style.display = 'block';
+          }
         });
-        function selectSeason(seasonId) {
-            // Remove active class from all spans
-            document.querySelectorAll('#season_selector span').forEach(span => {
-                span.classList.remove('active');
-            });
+      });
+    });
 
-            // Hide all season details
-            document.querySelectorAll('.season_details_item').forEach(item => {
-                item.style.display = 'none';
-            });
+    function selectSeason(seasonId) {
+      // Remove active class from all spans
+      document.querySelectorAll('#season_selector span').forEach(span => {
+        span.classList.remove('active');
+      });
 
-            // Add active class to the selected season and display its details
-            document.querySelector('#season_selector span[onclick="selectSeason(\'' + seasonId + '\')"]').classList.add('active');
-            document.getElementById(seasonId).style.display = 'block';
-        }
-    </script>
+      // Hide all season details
+      document.querySelectorAll('.season_details_item').forEach(item => {
+        item.style.display = 'none';
+      });
+
+      // Add active class to the selected season and display its details
+      document.querySelector('#season_selector span[onclick="selectSeason(\'' + seasonId + '\')"]').classList.add('active');
+      document.getElementById(seasonId).style.display = 'block';
+    }
+  </script>
 </head>
 <body>
-    <div class="background-image">
-        <div class="tint"></div>
-    </div>
-    <nav>
+  <div class="background-image">
+    <div class="tint"></div>
+  </div>
+
+  <nav>
+    <ul>
+      <li><a href="#"><img src="UCL.png" alt="UCL Logo"/></a></li>
+      <li><a href="index.html"><img src="KW.png" alt="KW Logo"/></a></li>
+    </ul>
+    <div class="submenu">
         <ul>
-            <li><a href="#"><img src="UCL.png"/></a></li>
-            <li><a href="index.html"><img src="KW.png"/></a></li>
+          <li><a href="#about">About the Tournament</a></li>
+          <li><a href="#rules">Rules of Auctions</a></li>
+          <li><a href="#teams">The Franchises</a></li>
+          <li><a href="#register">Register now!</a></li>
+          <li><a href="#past-seasons">Past Seasons</a></li>
         </ul>
-    </nav>
-        <div class="submenu">
+      </div>
+  </nav>
+
+  
+
+  <div class="details">
+    <!-- ABOUT -->
+    <div id="about">
+      <h2>About the Tournament</h2>
+      <p><b>Introducing the United Cricket League (UCL) - Your Ultimate Cricket Fun!</b></p>
+        <p>Get ready to experience the electrifying atmosphere of franchise-style cricket, right here within our group! Think IPL excitement, but with a friendly and familiar twist. The United Cricket League (UCL) is our brand new, eagerly anticipated cricket tournament, meticulously designed for maximum fun and camaraderie. We kick things off with an engaging online mini-auction – your chance to be a pivotal part of building a winning team from the ground up! Forget multi-million dollar bids; in the UCL, strategy and a dash of playful rivalry are key, with a base price of just Rs. 50 for every talented player. This ensures everyone has a fair shot and the focus remains firmly on good times and clever team composition.</p>
+        <p>Four dynamic teams will be forged through this exciting auction process, each poised to battle it out for UCL glory. Get ready for a festive dose of cricketing action! Prepare for the adrenaline rush of fast-paced T10 matches in the round-robin stage. This format promises quickfire excitement and strategic gameplay, with each team getting a fair crack at the whip, playing three matches each. This ensures everyone gets plenty of time on the pitch and the chance to showcase their skills (or hilarious lack thereof!).</p>               
+        <p>But the fun doesn't stop there! As the round-robin concludes, the intensity will ramp up as all four teams progress to the semi-finals. That's right, no early eliminations – everyone gets a shot at the knockout stages! Here, the format shifts to the more strategic T20, demanding a blend of power hitting and tactical bowling. The winners of these high-stakes semi-finals will then clash in the ultimate T20 final, a showdown guaranteed to be filled with nail-biting moments and celebratory cheers (and maybe a few good-natured jeers!).   </p>                 
+        <p>The UCL is more than just a cricket tournament; it's a fantastic opportunity to strengthen bonds, unleash your inner cricketer (regardless of skill level!), and create lasting memories with everyone. It's a chance to step away from the everyday, connect with colleagues and friends in a relaxed and enjoyable setting, and simply have a fantastic weekend. To make the experience even better, delicious food will be provided right at the ground throughout the tournament, so all you need to bring is your enthusiasm, your competitive spirit (the friendly kind!), and maybe your lucky charm. We can't wait to see you there!</p>
+</div>
+
+    <!-- RULES -->
+    <div id="rules" class="auction-rules-document" style="display: none;">
+      <h2>Rules of the Auctions</h2>
+      <b>Preamble:</b>
+        <p>This document outlines the official rules and regulations governing the player auction for the United Cricket League (UCL). All participating franchises and individuals involved in the auction process are expected to adhere to these rules to ensure a fair and transparent team formation process.</p>                 
+        <b>Article 1: Franchise Structure and Purse Allocation</b>
+        <ol>
+            <li>The UCL will consist of four (4) distinct franchises.</li>
+            <li>Each franchise will be allocated a total purse of Twenty-Five Hundred (2500) Rupees for player acquisitions during the auction.</li>
+        </ol>                 
+        <b>Article 2: Player Base Price and Pool</b>
+        <ol>
+            <li>The base price for each player in the auction pool is Fifty (50) Rupees.</li>
+            <li>The total number of players available in the auction pool is Sixty (60).</li>
+        </ol>                 
+        <b>Article 3: Team Composition</b>
+        <ol>
+            <li>Each franchise is mandated to acquire exactly Fifteen (15) players through the auction process.</li>
+        </ol>                
+        <b>Article 4: Bidding Increments</b>
+        <p>The bidding process will adhere to the following incremental structure:</p>
+        <ul>
+            <li>From Fifty (50) Rupees up to One Hundred and Fifty (150) Rupees, bids shall increase in increments of Ten (10) Rupees.</li>
+            <li>From One Hundred and Fifty (150) Rupees up to Three Hundred and Fifty (350) Rupees, bids shall increase in increments of Twenty (20) Rupees.</li>
+            <li>From Three Hundred and Fifty (350) Rupees up to Eight Hundred (800) Rupees, bids shall increase in increments of Fifty (50) Rupees.</li>
+            <li>Above Eight Hundred (800) Rupees, bids shall increase in increments of One Hundred (100) Rupees.</li>
+        </ul>
+        <p>Jump bids, where a franchise bids an amount exceeding the permissible increment, are strictly prohibited and will not be accepted. The auctioneer's decision on the validity of a bid will be final.</p>                
+        <b>Article 5: Auction Sequence and Player Categories</b>
+        <ol>
+            <li>The auction process will commence with each franchise nominating and acquiring either a Captain or a Trainer.</li>
+            <li>Following the Captain/Trainer selections, the auction of eight (8) marquee players, designated as "Starter Pokemon," will take place. These players will be auctioned individually.</li>
+            <li>The remaining players will be categorized into the following groups:
             <ul>
-                <li><a href="#about">About the Tournament</a></li>
-                <li><a href="#rules">Rules of Auctions</a></li>
-                <li><a href="#teams">The Franchises</a></li>
-                <li><a href="#register">Register now!</a></li>
-                <li><a href="#past-seasons">Past Seasons</a></li>
+                <li>Batsmen</li>
+                <li>Bowlers</li>
+                <li>Batting All-rounders</li>
+                <li>Bowling All-rounders</li>
+                <li>Wicket-keepers</li>
             </ul>
+            </li>
+            <li>The order in which these player groups are presented for auction will be decided and communicated beforehand.</li>
+            <li>Within each player group, the order in which individual players are put up for auction will be determined randomly at the time of the auction.</li>
+        </ol>                 
+        <b>Article 6: Retentions and Right to Match (RTM)</b>
+        <ol>
+            <li>The concept of player retentions from previous seasons (if any) is not applicable for this auction.</li>
+            <li>The Right to Match (RTM) card, allowing franchises to match the highest bid for a former player, will not be in effect for this auction.</li>
+        </ol>                
+        <b>Article 7: Unsold Players</b>
+        <ol>
+            <li>Any players who remain unsold after the initial auction rounds for all predefined player groups are completed will be combined into a single "Unsold Players" category.</li>
+            <li>These unsold players will be put up for auction again. Franchises will have the opportunity to bid on these players to fulfill their mandatory team quota of fifteen (15) players.</li>
+        </ol>                
+        <b>Article 8: Mandatory Player Acquisition</b>
+        <ol>
+            <li>Each of the four (4) franchises is obligated to acquire a total of fifteen (15) players by the conclusion of the auction process.</li>
+            <li>The auction will continue until all sixty (60) players have been successfully acquired by the participating franchises.</li>
+        </ol>                
+        <b>Article 9: General Conduct</b>
+        <ol>
+            <li>All participants are expected to conduct themselves in a sportsmanlike and respectful manner throughout the auction process.</li>
+            <li>Any disputes or clarifications regarding the auction rules will be addressed by the designated auction organizers, whose decisions will be final.</li>
+        </ol>   
+
+      <!-- Additional rules truncated for brevity... -->
+      <p class="disclaimer">
+        <strong>Disclaimer:</strong> These rules are designed to facilitate a smooth and enjoyable auction process for the UCL. The organizers reserve the right to make minor adjustments to these rules if deemed necessary, with prior communication to all participating franchises.
+      </p>
+    </div>
+
+    <!-- TEAMS -->
+    <div id="teams" style="display: none;">
+      <h2>Meet the Franchises</h2>
+      <div id="teams_grid">
+        <div class="teams_card">
+          <img src="sop.jpg" alt="Sons of Pitches"/>
+          <div class="teams_card_hover_box">
+            <b>Sons of Pitches</b>
+            <p>Nibhrit Vij</p>
+          </div>
         </div>
-        <div class="details">
-            <div id="about">
-                <h2>About the Tournament</h2>
-                <p><b>Introducing the United Cricket League (UCL) - Your Ultimate Cricket Fun!</b></p>
-                    <p>Get ready to experience the electrifying atmosphere of franchise-style cricket, right here within our group! Think IPL excitement, but with a friendly and familiar twist. The United Cricket League (UCL) is our brand new, eagerly anticipated cricket tournament, meticulously designed for maximum fun and camaraderie. We kick things off with an engaging online mini-auction – your chance to be a pivotal part of building a winning team from the ground up! Forget multi-million dollar bids; in the UCL, strategy and a dash of playful rivalry are key, with a base price of just Rs. 50 for every talented player. This ensures everyone has a fair shot and the focus remains firmly on good times and clever team composition.</p>
-                    <p>Four dynamic teams will be forged through this exciting auction process, each poised to battle it out for UCL glory. Get ready for a festive dose of cricketing action! Prepare for the adrenaline rush of fast-paced T10 matches in the round-robin stage. This format promises quickfire excitement and strategic gameplay, with each team getting a fair crack at the whip, playing three matches each. This ensures everyone gets plenty of time on the pitch and the chance to showcase their skills (or hilarious lack thereof!).</p>               
-                    <p>But the fun doesn't stop there! As the round-robin concludes, the intensity will ramp up as all four teams progress to the semi-finals. That's right, no early eliminations – everyone gets a shot at the knockout stages! Here, the format shifts to the more strategic T20, demanding a blend of power hitting and tactical bowling. The winners of these high-stakes semi-finals will then clash in the ultimate T20 final, a showdown guaranteed to be filled with nail-biting moments and celebratory cheers (and maybe a few good-natured jeers!).   </p>                 
-                    <p>The UCL is more than just a cricket tournament; it's a fantastic opportunity to strengthen bonds, unleash your inner cricketer (regardless of skill level!), and create lasting memories with everyone. It's a chance to step away from the everyday, connect with colleagues and friends in a relaxed and enjoyable setting, and simply have a fantastic weekend. To make the experience even better, delicious food will be provided right at the ground throughout the tournament, so all you need to bring is your enthusiasm, your competitive spirit (the friendly kind!), and maybe your lucky charm. We can't wait to see you there!</p>
-            </div>
-            <div id="rules" class="auction-rules-document" style="display: none;">
-                <h2>Rules of the Auctions</h2>
-                    <b>Preamble:</b>
-                    <p>This document outlines the official rules and regulations governing the player auction for the United Cricket League (UCL). All participating franchises and individuals involved in the auction process are expected to adhere to these rules to ensure a fair and transparent team formation process.</p>                 
-                    <b>Article 1: Franchise Structure and Purse Allocation</b>
-                    <ol>
-                      <li>The UCL will consist of four (4) distinct franchises.</li>
-                      <li>Each franchise will be allocated a total purse of Twenty-Five Hundred (2500) Rupees for player acquisitions during the auction.</li>
-                    </ol>                 
-                    <b>Article 2: Player Base Price and Pool</b>
-                    <ol>
-                      <li>The base price for each player in the auction pool is Fifty (50) Rupees.</li>
-                      <li>The total number of players available in the auction pool is Sixty (60).</li>
-                    </ol>                 
-                    <b>Article 3: Team Composition</b>
-                    <ol>
-                      <li>Each franchise is mandated to acquire exactly Fifteen (15) players through the auction process.</li>
-                    </ol>                
-                    <b>Article 4: Bidding Increments</b>
-                    <p>The bidding process will adhere to the following incremental structure:</p>
-                    <ul>
-                      <li>From Fifty (50) Rupees up to One Hundred and Fifty (150) Rupees, bids shall increase in increments of Ten (10) Rupees.</li>
-                      <li>From One Hundred and Fifty (150) Rupees up to Three Hundred and Fifty (350) Rupees, bids shall increase in increments of Twenty (20) Rupees.</li>
-                      <li>From Three Hundred and Fifty (350) Rupees up to Eight Hundred (800) Rupees, bids shall increase in increments of Fifty (50) Rupees.</li>
-                      <li>Above Eight Hundred (800) Rupees, bids shall increase in increments of One Hundred (100) Rupees.</li>
-                    </ul>
-                    <p>Jump bids, where a franchise bids an amount exceeding the permissible increment, are strictly prohibited and will not be accepted. The auctioneer's decision on the validity of a bid will be final.</p>                
-                    <b>Article 5: Auction Sequence and Player Categories</b>
-                    <ol>
-                      <li>The auction process will commence with each franchise nominating and acquiring either a Captain or a Trainer.</li>
-                      <li>Following the Captain/Trainer selections, the auction of eight (8) marquee players, designated as "Starter Pokemon," will take place. These players will be auctioned individually.</li>
-                      <li>The remaining players will be categorized into the following groups:
-                        <ul>
-                          <li>Batsmen</li>
-                          <li>Bowlers</li>
-                          <li>Batting All-rounders</li>
-                          <li>Bowling All-rounders</li>
-                          <li>Wicket-keepers</li>
-                        </ul>
-                      </li>
-                      <li>The order in which these player groups are presented for auction will be decided and communicated beforehand.</li>
-                      <li>Within each player group, the order in which individual players are put up for auction will be determined randomly at the time of the auction.</li>
-                    </ol>                 
-                    <b>Article 6: Retentions and Right to Match (RTM)</b>
-                    <ol>
-                      <li>The concept of player retentions from previous seasons (if any) is not applicable for this auction.</li>
-                      <li>The Right to Match (RTM) card, allowing franchises to match the highest bid for a former player, will not be in effect for this auction.</li>
-                    </ol>                
-                    <b>Article 7: Unsold Players</b>
-                    <ol>
-                      <li>Any players who remain unsold after the initial auction rounds for all predefined player groups are completed will be combined into a single "Unsold Players" category.</li>
-                      <li>These unsold players will be put up for auction again. Franchises will have the opportunity to bid on these players to fulfill their mandatory team quota of fifteen (15) players.</li>
-                    </ol>                
-                    <b>Article 8: Mandatory Player Acquisition</b>
-                    <ol>
-                      <li>Each of the four (4) franchises is obligated to acquire a total of fifteen (15) players by the conclusion of the auction process.</li>
-                      <li>The auction will continue until all sixty (60) players have been successfully acquired by the participating franchises.</li>
-                    </ol>                
-                    <b>Article 9: General Conduct</b>
-                    <ol>
-                      <li>All participants are expected to conduct themselves in a sportsmanlike and respectful manner throughout the auction process.</li>
-                      <li>Any disputes or clarifications regarding the auction rules will be addressed by the designated auction organizers, whose decisions will be final.</li>
-                    </ol>                
-                    <p class="disclaimer"><strong>Disclaimer:</strong> These rules are designed to facilitate a smooth and enjoyable auction process for the UCL. The organizers reserve the right to make minor adjustments to these rules if deemed necessary, with prior communication to all participating franchises.</p>
-            </div>
-            <div id="teams" style="display: none;">
-                <h2>Meet the Franchises</h2>
-                <div id="teams_grid">
-                    <div class="teams_card">
-                        <img src="sop.jpg" />
-                        <div class="teams_card_hover_box">
-                            <b>Sons of Pitches</b>
-                            <p>Nibhrit Vij</p>
-                        </div>
-                    </div>
-                    <div class="teams_card">
-                        <img src="hod.jpg" />
-                        <div class="teams_card_hover_box">
-                            <b>House of Dragons</b>
-                            <p>Venu Kondoor</p>
-                        </div>
-                    </div>
-                    <div class="teams_card">
-                        <img src="skm.jpg" />
-                        <div class="teams_card_hover_box">
-                            <b>Sir_King Makers</b>
-                            <p>Pradeep Sirki</p>
-                        </div>
-                    </div>
-                    <div class="teams_card">
-                        <img src="ca.jpg" />
-                        <div class="teams_card_hover_box">
-                            <b>Cricket Addicts</b>
-                            <p>Vamshidhar Banda</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="register" style="display: none;">
-                <h2>Auction Registration</h2>
-                <p>Registration for the auctions is currently closed, but we expect to open very soon!</p>
-            </div>
-            <div id="past-seasons" style="display: none;">
-                <h2>Past Seasons</h2>
-                <div id="season_selector">
-                    <span class="active" onclick="selectSeason('season-1')">Season 1</span> 
-                    <span onclick="selectSeason('season-2')">Season 2</span>
-                </div>
-                <div id="season_details">
-                    <div class="season_details_item" id="season-1">
-                        <div class="season_teams">
-                            <div><img src="season1/sop.jpeg" alt="Sons of Pitches"/></div>
-                            <div class="champion"><img src="season1/hod.jpeg" alt="House of Dragons" /></div>
-                            <div class="champion"><img src="season1/skm.jpeg" alt="Sir_King Makers" /></div>
-                            <div><img src="season1/ca.jpeg" alt="Cricket Addicts" /></div>
-                        </div>
-                        <div class="season_tables">
-                            <div>
-                                <div class="captain-title">League Stage</div>
-                                <div class="table" aria-label="League Stage">
-                                    <div class="table-header">Team</div>
-                                    <div class="table-header">M</div>
-                                    <div class="table-header">W</div>
-                                    <div class="table-header">L</div>
-                                    <div class="table-header">NR</div>
-                                    <div class="table-header">Pts</div>
-                                    <div class="table-header">NRR</div>
-                                    
-                                    <div class="table-cell">Sir_King Makers</div>
-                                    <div class="table-cell">3</div>
-                                    <div class="table-cell">2</div>
-                                    <div class="table-cell">0</div>
-                                    <div class="table-cell">1</div>
-                                    <div class="table-cell">5</div>
-                                    <div class="table-cell">2.650</div>
-                                    
-                                    <div class="table-cell">House of Dragons</div>
-                                    <div class="table-cell">3</div>
-                                    <div class="table-cell">1</div>
-                                    <div class="table-cell">1</div>
-                                    <div class="table-cell">1</div>
-                                    <div class="table-cell">3</div>
-                                    <div class="table-cell">0.942</div>
-
-                                    <div class="table-cell">Sons of Pitches</div>
-                                    <div class="table-cell">3</div>
-                                    <div class="table-cell">1</div>
-                                    <div class="table-cell">2</div>
-                                    <div class="table-cell">0</div>
-                                    <div class="table-cell">2</div>
-                                    <div class="table-cell">-0.875</div>
-
-                                    <div class="table-cell">Cricket Addicts</div>
-                                    <div class="table-cell">3</div>
-                                    <div class="table-cell">1</div>
-                                    <div class="table-cell">2</div>
-                                    <div class="table-cell">0</div>
-                                    <div class="table-cell">2</div>
-                                    <div class="table-cell">-2.146</div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="captain-title">Knockout Rounds</div>
-                                <div class="table" aria-label="Knockouts" style="grid-template-columns: 3fr 6fr 1fr;">
-                                    <div class="table-header">Match</div>
-                                    <div class="table-header">Teams</div>
-                                    <div class="table-header">Winner</div>
-                                    
-                                    <div class="table-cell">Semi-final 1</div>
-                                    <div class="table-cell">Sons of Pitches vs House of Dragons</div>
-                                    <div class="table-cell">HOD</div>
-
-                                    <div class="table-cell">Semi-final 2</div>
-                                    <div class="table-cell">Cricket Addicts vs Sir_King Makers</div>
-                                    <div class="table-cell">SKM</div>
-
-                                    <div class="table-cell blackened"></div>
-                                    <div class="table-cell blackened"></div>
-                                    <div class="table-cell blackened"></div>
-
-                                    <div class="table-cell">FINAL</div>
-                                    <div class="table-cell">Sir_King Makers vs House of Dragons</div>
-                                    <div class="table-cell">N/R</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="season_leaderboard">
-                            <div class="season_leaderboard_item" style="width: 30%;">
-                                <div class="container">
-                                    <div class="card">
-                                        <div class="imgBx">
-                                            <img src="season1/mvp.png" alt="MVP">
-                                        </div>
-                                        <div class="contentBx">
-                                            <h2>Chanukya Kotagiri</h2>
-                                            <div class="size">
-                                                <h3>Runs: 61  Avg: 30.50  SR: 141.86</h3>
-                                            </div>
-                                            <div class="color">
-                                                <h3>Wkts: 7  Econ: 8.00</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="season_leaderboard_item">
-                                <div class="container">
-                                    <div class="card">
-                                        <div class="imgBx">
-                                            <img src="season1/best_bat.png" alt="MVP">
-                                        </div>
-                                        <div class="contentBx">
-                                            <h2>Abhishek Sai</h2>
-                                            <div class="size">
-                                                <h3>Runs: 148<br/>Avg: 37.00<br/>SR: 211.43</h3>
-                                            </div>
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="season_leaderboard_item">
-                                <div class="container">
-                                    <div class="card">
-                                        <div class="imgBx">
-                                            <img src="season1/best_bowl.png" alt="MVP">
-                                        </div>
-                                        <div class="contentBx">
-                                            <h2>Chanukya Kotagiri</h2>
-                                            <div class="size">
-                                                <h3>Wkts: 7<br/>Econ: 8.00</h3>
-                                            </div>
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="season_leaderboard_item">
-                                <div class="container">
-                                    <div class="card">
-                                        <div class="imgBx">
-                                            <img src="season1/best_field.png" alt="MVP">
-                                        </div>
-                                        <div class="contentBx">
-                                            <h2>Harish Reddy</h2>
-                                            <div class="size">
-                                                <h3>Dismissals: 6<br/>Catches: 6</h3>
-                                            </div>
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="season_details_item" id="season-2" style="display: none;">
-                        Coming Soon!
-                    </div>
-                </div>
-            </div>
+        <div class="teams_card">
+          <img src="hod.jpg" alt="House of Dragons"/>
+          <div class="teams_card_hover_box">
+            <b>House of Dragons</b>
+            <p>Venu Kondoor</p>
+          </div>
         </div>
-    <footer>
-        <div class="social-links">
-            <a href="https://www.youtube.com/@KnightWatchmenHyderabad" target="_blank">@KnightWatchmenHyderabad<img src="yt_icon.png" alt="YT Logo"></a>
+        <div class="teams_card">
+          <img src="skm.jpg" alt="Sir_King Makers"/>
+          <div class="teams_card_hover_box">
+            <b>Sir_King Makers</b>
+            <p>Pradeep Sirki</p>
+          </div>
         </div>
-    </footer>
+        <div class="teams_card">
+          <img src="ca.jpg" alt="Cricket Addicts"/>
+          <div class="teams_card_hover_box">
+            <b>Cricket Addicts</b>
+            <p>Vamshidhar Banda</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="register" style="display: none;">
+      <h2>Auction Registration</h2>
+      <p>Registration for the auctions is currently closed...</p>
+    </div>
+
+    <!-- PAST SEASONS -->
+    <div id="past-seasons" style="display: none;">
+      <h2>Past Seasons</h2>
+      <div id="season_selector">
+        <span class="active" onclick="selectSeason('season-1')">Season 1</span> 
+        <span onclick="selectSeason('season-2')">Season 2</span>
+      </div>
+      <div id="season_details">
+        <div class="season_details_item" id="season-1">
+          <div class="season_teams">
+            <div><img src="season1/sop.jpeg" alt="Sons of Pitches"/></div>
+            <div class="champion"><img src="season1/hod.jpeg" alt="House of Dragons" /></div>
+            <div class="champion"><img src="season1/skm.jpeg" alt="Sir_King Makers" /></div>
+            <div><img src="season1/ca.jpeg" alt="Cricket Addicts" /></div>
+          </div>
+          <div class="season_tables">
+            <div>
+              <div class="captain-title">League Stage</div>
+              <div class="table" aria-label="League Stage">
+                <div class="table-header">Team</div>
+                <div class="table-header">M</div>
+                <div class="table-header">W</div>
+                <div class="table-header">L</div>
+                <div class="table-header">NR</div>
+                <div class="table-header">Pts</div>
+                <div class="table-header">NRR</div>
+                
+                <div class="table-cell">Sir_King Makers</div>
+                <div class="table-cell">3</div>
+                <div class="table-cell">2</div>
+                <div class="table-cell">0</div>
+                <div class="table-cell">1</div>
+                <div class="table-cell">5</div>
+                <div class="table-cell">2.650</div>
+                
+                <div class="table-cell">House of Dragons</div>
+                <div class="table-cell">3</div>
+                <div class="table-cell">1</div>
+                <div class="table-cell">1</div>
+                <div class="table-cell">1</div>
+                <div class="table-cell">3</div>
+                <div class="table-cell">0.942</div>
+
+                <div class="table-cell">Sons of Pitches</div>
+                <div class="table-cell">3</div>
+                <div class="table-cell">1</div>
+                <div class="table-cell">2</div>
+                <div class="table-cell">0</div>
+                <div class="table-cell">2</div>
+                <div class="table-cell">-0.875</div>
+
+                <div class="table-cell">Cricket Addicts</div>
+                <div class="table-cell">3</div>
+                <div class="table-cell">1</div>
+                <div class="table-cell">2</div>
+                <div class="table-cell">0</div>
+                <div class="table-cell">2</div>
+                <div class="table-cell">-2.146</div>
+              </div>
+            </div>
+            <div>
+              <div class="captain-title">Knockout Rounds</div>
+              <div class="table" aria-label="Knockouts" style="grid-template-columns: 3fr 6fr 1fr;">
+                <div class="table-header">Match</div>
+                <div class="table-header">Teams</div>
+                <div class="table-header">W</div>
+                
+                <div class="table-cell">Semi-final 1</div>
+                <div class="table-cell">Sons of Pitches vs House of Dragons</div>
+                <div class="table-cell">HOD</div>
+
+                <div class="table-cell">Semi-final 2</div>
+                <div class="table-cell">Cricket Addicts vs Sir_King Makers</div>
+                <div class="table-cell">SKM</div>
+
+                <div class="table-cell blackened"></div>
+                <div class="table-cell blackened"></div>
+                <div class="table-cell blackened"></div>
+
+                <div class="table-cell">FINAL</div>
+                <div class="table-cell">Sir_King Makers vs House of Dragons</div>
+                <div class="table-cell">N/R</div>
+              </div>
+            </div>
+          </div>
+          <div class="season_leaderboard">
+            <div class="season_leaderboard_item" style="width: 30%;">
+              <div class="container">
+                <div class="card">
+                  <div class="imgBx">
+                    <img src="season1/mvp.png" alt="MVP">
+                  </div>
+                  <div class="contentBx">
+                    <h2>Chanukya Kotagiri</h2>
+                    <div class="size">
+                      <h3>Runs: 61  <br/>Avg: 30.50  SR: 141.86</h3>
+                    </div>
+                    <div class="color">
+                      <h3>Wkts: 7  Econ: 8.00</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="season_leaderboard_item">
+              <div class="container">
+                <div class="card">
+                  <div class="imgBx">
+                    <img src="season1/best_bat.png" alt="Best Batsman">
+                  </div>
+                  <div class="contentBx">
+                    <h2>Abhishek Sai</h2>
+                    <div class="size">
+                      <h3>Runs: 148<br/>Avg: 37.00<br/>SR: 211.43</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="season_leaderboard_item">
+              <div class="container">
+                <div class="card">
+                  <div class="imgBx">
+                    <img src="season1/best_bowl.png" alt="Best Bowler">
+                  </div>
+                  <div class="contentBx">
+                    <h2>Chanukya Kotagiri</h2>
+                    <div class="size">
+                      <h3>Wkts: 7<br/>Econ: 8.00</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="season_leaderboard_item">
+              <div class="container">
+                <div class="card">
+                  <div class="imgBx">
+                    <img src="season1/best_field.png" alt="Best Fielder">
+                  </div>
+                  <div class="contentBx">
+                    <h2>Harish Reddy</h2>
+                    <div class="size">
+                      <h3>Dismissals: 6<br/>Catches: 6</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="season_details_item" id="season-2" style="display: none;">
+          Coming Soon!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="social-links">
+      <a href="https://www.youtube.com/@KnightWatchmenHyderabad" target="_blank">
+        @KnightWatchmenHyderabad
+        <img src="yt_icon.png" alt="YT Logo">
+      </a>
+    </div>
+  </footer>
 </body>
 </html>
