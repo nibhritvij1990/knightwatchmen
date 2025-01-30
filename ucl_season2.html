@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Viewport meta ensures the browser sets the page width based on device width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="Knight Watchmen - UCL Cricket Tournament">
+  <meta property="og:description" content="Explore the Ultimate Cricket League hosted by Knight Watchmen. Dive into the details about the tournament, rules, teams, and more.">
+  <meta property="og:image" content="https://knightwatchmen.in/ucl_bg.jpg">
+  <meta property="og:url" content="https://knightwatchmen.in/ucl_home">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Knight Watchmen">
+  <link rel="shortcut icon" href="KW_ico.png" type="image/x-icon">
+  <title>UCL | Knight Watchmen</title>
+
+  <style>
+    /* Base */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      position: relative;
+      background-color: #100959;
+    }
+
+    .background-image {
+      position: fixed;
+      height: 100%;
+      width: 100%;
+      background-image: url('ucl_bg.jpg');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      display: none;
+    }
+
+    .tint {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 80%);
+      display: none;
+    }
+
+    /* Navbar */
+    nav {
+      background-color: #ffffff;
+      position: absolute;
+      width: fit-content;
+      top: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      justify-content: center; 
+      align-items: center;
+      border-radius: 8px;
+    }
+
+    nav ul {
+      list-style: none;
+      padding: 0 0;
+      margin: 0;
+      display: flex;
+      justify-content: center; 
+      align-items: center;
+    }
+
+    nav ul li {
+      margin: 8px 8px;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      padding: 10px 15px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav ul li a img {
+      width: 100px;
+    }
+
+    /* Submenu */
+    .submenu {
+      background-color: rgba(88, 88, 159, 0);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0);
+      color: #fff; 
+      
+    }
+
+    .submenu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .submenu ul li a {
+        text-decoration: none;
+        color: #100959;
+        display: block;
+        padding: 16px 15px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+        text-transform: capitalize;
+        width: min-content;
+        font-weight: unset;
+        font-size: 1rem;
+        box-sizing: border-box;
+        border: 2px solid transparent;
+        font-weight: 550;
+    }
+
+    .submenu ul li a:hover {
+      background-color: rgba(255, 255, 255, 0.0);
+      border-bottom: 2px solid #fe0188;
+    }
+
+    .submenu ul li a.active {
+        color: #fe0188;
+    }
+
+    /* Details container */
+    .details {
+      position: fixed;
+      top: 160px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-height: calc(100vh - 320px);
+      line-height: 1.6;
+      /* Instead of a fixed width of 1000px, let it shrink on small screens: */
+      width: 90%;
+      max-width: 1000px;
+      padding: 0 0 50px 0;
+      background: rgba(255, 255, 255, 0.0);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.0);
+    }
+
+    .details h2 {
+      color: #ffffff; 
+      margin: 0 0 8px;
+      padding-bottom: 5px;
+      font-size: 32px;
+      font-weight: lighter;
+    }
+
+    .details h2 span {
+      color: #fe0188;
+    }
+
+    .details p {
+      line-height: 1.6;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    #players_grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 24px;
+        overflow: auto;
+        max-height: 550px;
+    }
+
+    .players_card {
+        width: 224px;
+        height: 256px;
+        background-color: #ffffff;
+        border-radius: 4px;
+        background-image: url("season2/Group124.png");
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .players_card img {
+        width: 200px;
+        margin: 12px;
+        margin-bottom:0px;
+        aspect-ratio: 1;
+        object-fit: cover;
+        object-position: center;
+    }
+
+    .players_card_name {
+        width: 200px;
+        margin: 12px;
+        margin-top: 0px;
+        font-size: 14px;
+        color: #ffffff;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #100959;
+        text-transform: capitalize;
+    }
+
+    /* Teams Grid */
+    #teams #teams_grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    #teams #teams_grid .teams_card {
+      aspect-ratio: 1; 
+      padding: 24px;
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: linear-gradient(
+        135deg,
+        rgba(235,194,20,1) 0%, 
+        rgba(235,194,20,1) 25%, 
+        rgba(0,0,0,1) 25%, 
+        rgba(0,0,0,1) 80%, 
+        rgba(235,194,20,1) 80%, 
+        rgba(235,194,20,1) 100%
+      );
+    }
+
+    #teams #teams_grid .teams_card img {
+      width: 100%;
+      outline: 8px solid black;
+    }
+
+    #teams #teams_grid .teams_card .teams_card_hover_box * {
+      color: white;
+    }
+
+    #teams #teams_grid .teams_card .teams_card_hover_box {
+      display: none;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(88, 88, 159, 0.9);
+      cursor: pointer;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    #teams #teams_grid .teams_card:hover .teams_card_hover_box {
+      display: flex;
+    }
+
+    /* Register / Past Seasons */
+    
+
+    /* Footer */
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      background-color: transparent;
+      color: #fff;
+      padding: 10px 0px;
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .social-links a {
+      color: white;
+      margin: 0 10px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .social-links img {
+      height: 24px;
+      margin-left: 5px;
+    }
+
+    /* MEDIA QUERIES – Adjust layout for mobile/tablet */
+    @media (max-width: 768px) {
+        nav {
+            flex-direction: column;
+            position: relative;
+        }
+      /* NAV: stack items vertically */
+      nav ul {
+        flex-direction: row;
+        padding: 0px 0;
+      }
+      nav ul li {
+        margin: 8px;
+      }
+      nav ul li a img {
+        width: 100px;
+      }
+
+      .submenu {
+        transform: none;
+        margin-top: 10px;
+        width: 90%;
+      }
+      .submenu ul {
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+      }
+      .submenu ul li a {
+        text-align: center;
+        max-width: fit-content;
+        white-space: nowrap;
+        padding: 0;
+      }
+
+      /* DETAILS: remove fixed positioning so it can scroll naturally */
+      .details {
+        top: unset;
+        max-height: calc(100vh - 420px);
+        position: relative;
+      }
+      .details h2 {
+        font-size: 2.5rem; /* Larger text on mobile can get unwieldy; adjust as needed */
+      }
+
+      /* TEAMS GRID: 2 columns on smaller screens (or 1 column if you prefer) */
+      #teams #teams_grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+      }
+
+      .season_teams {
+        flex-wrap: wrap;
+      }
+      .season_teams > div {
+        width: 48%;
+      }
+      .season_teams div.champion::after {
+        top: 2px;
+        right: 0;
+      }
+
+      .season_tables {
+        flex-direction: column;
+        font-size: 14px;
+      }
+      .season_tables > div {
+        width: 100%;
+        margin-bottom: 16px;
+        padding: 0;
+      }
+      .season_tables > div:nth-child(2) .table {
+        grid-template-columns: 2.5fr 6.5fr 1fr !important;
+      }
+      .season_leaderboard {
+        flex-direction: column;
+        align-items: center;
+      }
+      .season_leaderboard > div {
+        width: min(300px, 90%) !important;
+        margin-bottom: 20px;
+        align-items: center;
+      }
+
+      .season_leaderboard_item .container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .container .card {
+        margin-top: 20px;
+        width: 80%;
+        height: 350px;
+        margin-top: 0 !important;
+      }
+
+      /* For the first card (MVP), let it adapt */
+      .season_leaderboard_item:first-child .container .card {
+        height: 350px;
+      }
+      .season_leaderboard_item::before {
+        top: 4px !important;
+        }
+
+      .container .card .imgBx {
+        height: auto;
+        transform: none;
+      }
+
+      .container .card:hover .imgBx {
+        transform: translate(0px, 120px) scale(1.25);
+      }
+
+      
+    }
+  </style>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const sections = document.querySelectorAll('.details > div');
+      const menuItems = document.querySelectorAll('.submenu a');
+      sections.forEach(section => section.style.display = 'none'); // Hide all sections initially
+
+      // Show the first section by default
+      if (sections.length > 0) {
+        sections[0].style.display = 'block';
+      }
+
+      menuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          menuItems.forEach(menuItem => menuItem.classList.remove('active'));
+          this.classList.add('active');
+          sections.forEach(section => section.style.display = 'none');
+          const activeSection = document.querySelector(this.getAttribute('href'));
+          if (activeSection) {
+            activeSection.style.display = 'block';
+          }
+        });
+      });
+
+      renderPlayers();
+    });
+
+    function renderPlayers() {
+      const players = document.getElementById('players_grid');
+      const playerData = [{"full_name":"Prash Prash...","photo_filename":"WhatsApp Image 2024-11-19 at 04.12.45 - Prashanth G.jpeg"},{"full_name":"Nibhrit Vij","photo_filename":"auction-1736503696282-209157058 - Nibhrit Vij.jpg"},{"full_name":"Saidavali","photo_filename":"IMG20250115064926 - vali rupenaguntla.jpg"},{"full_name":"Nagendra Thurpanati","photo_filename":"IMG_20220611_005619_735 - THURPUNATI NAGENDRA.jpg"},{"full_name":"Chaitanya Ramarao","photo_filename":"bbb2985f-2242-452e-8dd5-6bffd81bb43f - Chaitanya Ramarao Adavi.jpeg"},{"full_name":"Venugopal Kondoor","photo_filename":"1000007195 - Venugopal Kondoor.jpeg"},{"full_name":"Ramakrishna RK","photo_filename":"Screenshot_20220106-142144 - Kris Na.jpg"},{"full_name":"Naveen Kumar","photo_filename":"received_852590261855978_Original_Original - Naveen Kumar.jpeg"},{"full_name":"Bhargav Tharivitla","photo_filename":"980b0fdb-df8b-4f3e-b666-0a4072b8f504 - Bhargav Tharivitla.jpeg"},{"full_name":"Suhas Thipparthi","photo_filename":"image - T.suhaas chandra.jpg"},{"full_name":"Sri sai charan P","photo_filename":"IMG_1289 - Sri Sai Charan.jpeg"},{"full_name":"Swedhan kumar","photo_filename":"IMG-20241214-WA0011 - swedhan kumar.jpg"},{"full_name":"KV Teja","photo_filename":"17377206485028119643951257687084 - Sai Teja.jpg"},{"full_name":"UV","photo_filename":"IMG_0386 - Gandiboina Prasad.jpeg"},{"full_name":"UDAY BHASKAR","photo_filename":"IMG-20250111-WA0099 - UDAY BHASKAR BUSAKALA.jpg"},{"full_name":"SANDEEP BHARDWAJ","photo_filename":"54B03C95-85D8-4F93-8A56-6F7C3DB0EAD4 - Sandeep BHARDWAJ.jpeg"},{"full_name":"Harivardhan Reddy","photo_filename":"IMG-20241229-WA0038 - C. Harivardhan Reddy.jpg"},{"full_name":"Harsha Yalamati","photo_filename":"IMG_9871 - harsha yalamati.jpeg"},{"full_name":"Suresh Giri","photo_filename":"IMG_9668 - Suresh Kumar.JPG"},{"full_name":"Phani GOUD","photo_filename":"IMG_20250124_175715 - Phanindra Goud.jpg"},{"full_name":"P Vishnu Vardhan Vishal","photo_filename":"IMG_2901 - vishal vardhan.jpeg"},{"full_name":"Sunil  Sunny","photo_filename":"Screenshot_2025-01-05-20-26-18-92 - Sunil Kumar.jpg"},{"full_name":"DP Prince","photo_filename":"IMG_6298 - Chinnu Chinnu.jpeg"},{"full_name":"Sasank Vasimalla","photo_filename":"IMG_20200909_212222_217 - Sasank Maxi.jpg"},{"full_name":"Abhinay Abhi","photo_filename":"IMG_2943 - Abhinay Adimulam.jpeg"},{"full_name":"Saikiran karra Sai","photo_filename":"IMG20241226173044 - sai kiran karra.jpg"},{"full_name":"Raghu","photo_filename":"IMG_2204 - Raghupathi Uyyala.jpeg"},{"full_name":"Abhilash Kenny","photo_filename":"IMG_4060 - Venkata Abhilash.jpeg"},{"full_name":"Srikanth","photo_filename":"IMG_2690 - Srikanth E.jpeg"},{"full_name":"Abhishek Sai","photo_filename":"images-player.png"},{"full_name":"Manoj Manu","photo_filename":"images-player.png"},{"full_name":"DILEEP KUMAR","photo_filename":"IMG_20230807_013451 - dilip dasari.jpg"},{"full_name":"KUMBHA Naga Akhil","photo_filename":"IMG_20230909_194014 - Akhil Naga.jpg"},{"full_name":"Guttameedi  Jayanth","photo_filename":"IMG_20240321_213616_066 - Jayanth Guttameedi.jpg"},{"full_name":"Teja Machiraju","photo_filename":"IMG_20250124_182904 - Srinivasa Teja.jpg"},{"full_name":"Kiran  Reddy","photo_filename":"IMG-20250124-WA0002 - kiran.jpg"},{"full_name":"Chanukya kotagiri","photo_filename":"IMG_1450 - chanukya kotagiri.jpeg"},{"full_name":"Aravind  Chatlapally","photo_filename":"images-player.png"},{"full_name":"Pratik Daine","photo_filename":"images-player.png"},{"full_name":"Surendra  Suri","photo_filename":"images-player.png"},{"full_name":"sai ram","photo_filename":"images-player.png"},{"full_name":"R Sudheer","photo_filename":"17377257300254776368536119942628 - rachamalla subba reddy.jpg"},{"full_name":"Prabhakar","photo_filename":"Screenshot_2025-01-24-19-09-02-91_6012fa4d4ddec268fc5c7112cbb265e7 - Prabhakar Yadav.jpg"},{"full_name":"Prashanth Shetty","photo_filename":"images-player.png"},{"full_name":"Upendra Meesala","photo_filename":"IMG_20241031_221528_439 - Upendra Meesala.webp"},{"full_name":"Sathish  Tillu","photo_filename":"1735465080398 - V Sathish.jpg"},{"full_name":"Vikas Vicky","photo_filename":"IMG_7247 - vicky vikas.jpeg"},{"full_name":"Vamshi Banda","photo_filename":"20241225_070005 - Vamshi Banda.jpg"},{"full_name":"Shiva Gadapa","photo_filename":"images-player.png"},{"full_name":"Praveen  Yadav","photo_filename":"images-player.png"},{"full_name":"Harsha ram","photo_filename":"images-player.png"},{"full_name":"Ashok  Gullapalli","photo_filename":"IMG_20190427_071719_031_Original - gullapalli ashok.jpeg"},{"full_name":"Govardhan Bolisetty","photo_filename":"IMG_20210202_210223_056 - Govardhan Bolisetty.jpeg"},{"full_name":"Pradeep Siriki","photo_filename":"images-player.png"},{"full_name":"Mahesh Kansanpally","photo_filename":"IMG-20240804-WA0006 - Mahesh K.jpg"},{"full_name":"Nazam Mohammed","photo_filename":"IMG_3202 - Nazam Mohammed.jpeg"},{"full_name":"Tharun  Raj","photo_filename":"downloadfile - Tharun Raj Rontala.pdf"},{"full_name":"Prashant addanki","photo_filename":"images-player.png"},{"full_name":"HARSHA CHERRY","photo_filename":"images-player.png"},{"full_name":"Dr. Ravi","photo_filename":"images-player.png"}];
+      players.innerHTML = "";
+      playerData.forEach(player => {
+        players.innerHTML += `<div class="players_card">
+        <img src="season2/playerImages/${player.photo_filename}" alt="Player Card"/>
+        <div class="players_card_name">
+          <b>${player.full_name}</b>
+        </div>
+      </div>`;
+      });
+    }
+
+    function selectSeason(seasonId) {
+      // Remove active class from all spans
+      document.querySelectorAll('#season_selector span').forEach(span => {
+        span.classList.remove('active');
+      });
+
+      // Hide all season details
+      document.querySelectorAll('.season_details_item').forEach(item => {
+        item.style.display = 'none';
+      });
+
+      // Add active class to the selected season and display its details
+      document.querySelector('#season_selector span[onclick="selectSeason(\'' + seasonId + '\')"]').classList.add('active');
+      document.getElementById(seasonId).style.display = 'block';
+    }
+  </script>
+</head>
+<body>
+  <div class="background-image">
+    <div class="tint"></div>
+  </div>
+
+  <nav>
+    <ul>
+      <li><a href="#"><img src="UCL.png" alt="UCL Logo"/></a></li>
+      <li><a href="index.html"><img src="KW.png" alt="KW Logo"/></a></li>
+    </ul>
+    <div class="submenu">
+        <ul>
+          <li><a href="#players" class="active">Players</a></li>
+          <li><a href="#teams">Teams</a></li>
+          <li><a href="#matches">Matches</a></li>
+          <li><a href="#sponsors">Sponsors</a></li>
+          <li><a href="#heroes">Heroes</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+        </ul>
+      </div>
+  </nav>
+
+  
+
+  <div class="details">
+    <!-- ABOUT -->
+    <div id="players">
+      <h2>UCL Season 2 <span>Players</span></h2>
+      <p><b>UCL Season 2 player list is now LIVE! 🏏 🔥</b></p>
+        <p>Under the Players menu, you can explore the final 60 players who have made it to the tournament.</p>
+        <p>From seasoned veterans to rising stars, this lineup is set to bring their A-game.</p>
+        <div id="players_grid">
+
+          <div class="players_card">
+            <img src="season2/playerImages/IMG_0070 - Hemanth Kumar Reddy Tupili.jpeg" alt="Player 1"/>
+            <div class="players_card_name">
+              <b>Player 1</b>
+            </div>
+          </div>
+          
+        </div>
+        
+
+    </div>
+
+    <!-- TEAMS -->
+    <div id="teams" style="display: none;">
+      <h2>Meet the Franchises</h2>
+      <div id="teams_grid">
+        <div class="teams_card">
+          <img src="season2/Cric Masters.jpg" alt="Sons of Pitches"/>
+          <div class="teams_card_hover_box">
+            <b>Cric Masters</b>
+            <p>Abhishek Sai</p>
+          </div>
+        </div>
+        <div class="teams_card">
+          <img src="season2/Lightning Bolts.jpg" alt="House of Dragons"/>
+          <div class="teams_card_hover_box">
+            <b>Lightning Bolts</b>
+            <p>Vishal Vishnu</p>
+          </div>
+        </div>
+        <div class="teams_card">
+          <img src="season2/Kinetic Warriors.jpg" alt="Sir_King Makers"/>
+          <div class="teams_card_hover_box">
+            <b>Kinetic Warriors</b>
+            <p>Abhilash Kenny</p>
+          </div>
+        </div>
+        <div class="teams_card">
+          <img src="season2/Iron Giants.jpg" alt="Cricket Addicts"/>
+          <div class="teams_card_hover_box">
+            <b>Iron Giants</b>
+            <p>Chanukya Kotagiri</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATCHES -->
+    <div id="matches" style="display: none;">
+      <h2>Matches</h2>
+    </div>
+
+    <!-- SPONSORS -->
+    <div id="sponsors" style="display: none;">
+      <h2>Sponsors</h2>
+    </div>
+
+    <!-- HEROES -->
+    <div id="heroes" style="display: none;">
+      <h2>Heroes</h2>
+    </div>
+
+    <!-- GALLERY -->
+    <div id="gallery" style="display: none;">
+      <h2>Gallery</h2>
+    </div>
+</div>
+    
+
+  <footer>
+    <div class="social-links">
+      <a href="https://www.youtube.com/@KnightWatchmenHyderabad" target="_blank">
+        @KnightWatchmenHyderabad
+        <img src="yt_icon.png" alt="YT Logo">
+      </a>
+    </div>
+  </footer>
+</body>
+</html>

@@ -594,6 +594,7 @@
         top: 2px;
         right: 0;
       }
+
       .season_tables {
         flex-direction: column;
         font-size: 14px;
@@ -662,7 +663,10 @@
 
       menuItems.forEach(item => {
         item.addEventListener('click', function(e) {
-          e.preventDefault();
+          if (this.getAttribute('href').includes("#")) {
+            e.preventDefault();
+          }
+          //e.preventDefault();
           sections.forEach(section => section.style.display = 'none');
           const activeSection = document.querySelector(this.getAttribute('href'));
           if (activeSection) {
@@ -706,6 +710,7 @@
           <li><a href="#teams">The Franchises</a></li>
           <li><a href="#register">Register now!</a></li>
           <li><a href="#past-seasons">Past Seasons</a></li>
+          <li><a href="ucl_season2.html">Go To Season2</a></li>
         </ul>
       </div>
   </nav>
@@ -930,7 +935,7 @@
                   <div class="contentBx">
                     <h2>Chanukya Kotagiri</h2>
                     <div class="size">
-                      <h3>Runs: 61<br/>Avg: 30.50  SR: 141.86</h3>
+                      <h3>Runs: 61  <br/>Avg: 30.50  SR: 141.86</h3>
                     </div>
                     <div class="color">
                       <h3>Wkts: 7  Econ: 8.00</h3>
