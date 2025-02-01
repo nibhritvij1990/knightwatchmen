@@ -297,6 +297,30 @@
       margin-left: 5px;
     }
 
+    #countdownTimer p {
+      display: grid;
+      grid-template-columns: repeat(4, 200px);
+      grid-template-rows: 200px 50px;
+      grid-column-gap: 32px;
+      grid-row-gap: 0px;
+      margin: 64px auto;
+    }
+
+    #countdownTimer p span {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    #countdownTimer p span:nth-child(n+1):nth-child(-n+4) {
+      font-size: 100px;
+      color: #ffffff;
+      background-color: #fe0188;
+      border-radius:8px;
+    }
+
     /* MEDIA QUERIES – Adjust layout for mobile/tablet */
     @media (max-width: 768px) {
         nav {
@@ -437,6 +461,12 @@
         }); 
       });
 
+      const params = new URLSearchParams(window.location.search);
+      const tabId = params.get('tab');
+      if (tabId) {
+        document.querySelector(`a[href="#${tabId}"]`).click();
+      }
+
       renderPlayers();
     });
 
@@ -517,7 +547,55 @@
 
     <!-- AUCTION -->
     <div id="auction" style="display: none;">
-      <h2>Auction</h2>
+      <h2>UCL Season 2 <span>Auction</span></h2>
+      <p><b>UCL Season 2 player auction is scheduled to begin at 5PM on Sunday, 9th February 2025! 🏏 🔥</b></p>
+      <div id="auction_grid">
+        <div class="auction_timer">
+        <div id="countdownTimer">
+          <p>
+            <span id="days"></span>
+            <span id="hours"></span>
+            <span id="minutes"></span>
+            <span id="seconds"></span>
+            <span>Days</span>
+            <span>Hours</span>
+            <span>Minutes</span>
+            <span>Seconds</span>
+          </p>
+        </div>
+        <script>
+          (function() {
+            // Set the date and time for auction start: 5PM IST, 9th Feb 2025
+            var countDownDate = new Date("Feb 9, 2025 17:00:00 GMT+5:30").getTime();
+
+            // Update the countdown every second
+            var countdownInterval = setInterval(function() {
+              var now = new Date().getTime();
+              var distance = countDownDate - now;
+
+              // Time calculations
+              var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+              var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+              var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+              // Display the result
+              document.getElementById("days").textContent = days;
+              document.getElementById("hours").textContent = hours;
+              document.getElementById("minutes").textContent = minutes;
+              document.getElementById("seconds").textContent = seconds;
+
+              // If countdown is finished
+              if (distance < 0) {
+                clearInterval(countdownInterval);
+                document.getElementById("countdownTimer").innerHTML = "<p>The Auction Has Started!</p>";
+              }
+            }, 1000);
+          })();
+        </script>
+
+        </div>
+      </div>
     </div>
 
     <!-- TEAMS -->
