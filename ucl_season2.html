@@ -282,8 +282,7 @@
     }
 
     #teams #teams_grid .teams_card {
-      aspect-ratio: 1; 
-      padding: 24px;
+      padding: 0px;
       position: relative;
       box-sizing: border-box;
       overflow: hidden;
@@ -322,7 +321,7 @@
     }
 
     #teams #teams_grid .teams_card:hover .teams_card_hover_box {
-      display: flex;
+      display: none;
     }
 
     /* Register / Past Seasons */
@@ -391,6 +390,9 @@
         nav {
             flex-direction: column;
             position: relative;
+            top: 0;
+            border-radius: 0;
+            border: 4px solid #100959;
         }
       /* NAV: stack items vertically */
       nav ul {
@@ -423,7 +425,7 @@
       /* DETAILS: remove fixed positioning so it can scroll naturally */
       .details {
         top: 42px;
-        max-height: calc(100vh - 420px);
+        max-height: calc(100vh - 360px);
         position: relative;
       }
       .details h2 {
@@ -432,7 +434,7 @@
 
       /* TEAMS GRID: 2 columns on smaller screens (or 1 column if you prefer) */
       #teams #teams_grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
         gap: 16px;
       }
 
@@ -501,22 +503,31 @@
       #player-sets-container {
         grid-template-columns: 1fr;
       }
-
-      #countdownTimer p {
-        grid-template-columns: repeat(4, 100px);
-        grid-template-rows: 100px 32px;
-        grid-column-gap: 16px;
-      }
-
-      #countdownTimer p span:nth-child(n+1):nth-child(-n+4) {
-        font-size: 50px;
-      }
       
     }
   </style>
 
   <script>
+
+function adjustZoom() {
+        const zoomRatio = window.innerWidth / 1000;
+        //document.body.style.zoom = zoomRatio;
+        //document.getElementById('headerStrip-player-info').style.zoom = zoomRatio;
+        //document.getElementById('headerStrip-player-name').style.fontSize = '32px';
+        document.querySelectorAll("#countdownTimer p").forEach(ele => {
+          ele.style.zoom = zoomRatio;
+        });
+      }
+      if (window.innerHeight < 975) {
+        window.addEventListener('resize', adjustZoom);
+        window.addEventListener('load', adjustZoom);
+      }
+
+
     document.addEventListener("DOMContentLoaded", function() {
+
+
+
       const sections = document.querySelectorAll('.details > div');
       const menuItems = document.querySelectorAll('.submenu a');
       sections.forEach(section => section.style.display = 'none'); // Hide all sections initially
@@ -782,115 +793,132 @@
 
         <div id="player-sets-container">
           <div class="player-set" id="player-set-table1">
-            <table style="border-collapse: collapse; width: 100%; border: 2px solid #ccc;">
+            <table style="border-collapse: collapse; width: 100%; border: 2px solid #ccc; table-layout: fixed;">
               <!-- Captain/Owner -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="4">Captain/Owner</td><td>Abhilash Kenny</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="4">Captain/Owner</td>
+                <td style="width: 50%;">Abhilash Kenny</td>
               </tr>
-              <tr><td>Abhishek Sai</td></tr>
-              <tr><td>Chanukya Kotagiri</td></tr>
-              <tr><td>Vishal Vishnu Vardhan</td></tr>
+              <tr>
+                <td style="width: 50%;">Abhishek Sai</td>
+              </tr>
+              <tr>
+                <td style="width: 50%;">Chanukya Kotagiri</td>
+              </tr>
+              <tr>
+                <td style="width: 50%;">Vishal Vishnu Vardhan</td>
+              </tr>
 
               <!-- Starter Pokemon -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="10">Starter Pokemon</td><td>Dr.Ravi Badavath</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="10">Starter Pokemon</td>
+                <td style="width: 50%;">Dr.Ravi Badavath</td>
               </tr>
-              <tr><td>Nibhrit Vij</td></tr>
-              <tr><td>Pradeep Siriki</td></tr>
-              <tr><td>Prash Prash...</td></tr>
-              <tr><td>Raghu Uyyala</td></tr>
-              <tr><td>Suresh Giri</td></tr>
-              <tr><td>Vamshi Banda</td></tr>
-              <tr><td>Venugopal Kondoor</td></tr>
-              <tr><td>Harsha Yalamati</td></tr>
-              <tr><td>Pratik Daine</td></tr>
+              <tr><td style="width: 50%;">Nibhrit Vij</td></tr>
+              <tr><td style="width: 50%;">Pradeep Siriki</td></tr>
+              <tr><td style="width: 50%;">Prash Prash...</td></tr>
+              <tr><td style="width: 50%;">Raghu Uyyala</td></tr>
+              <tr><td style="width: 50%;">Suresh Giri</td></tr>
+              <tr><td style="width: 50%;">Vamshi Banda</td></tr>
+              <tr><td style="width: 50%;">Venugopal Kondoor</td></tr>
+              <tr><td style="width: 50%;">Harsha Yalamati</td></tr>
+              <tr><td style="width: 50%;">Pratik Daine</td></tr>
 
               <!-- Wicketkeeper Set -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="4">Wicketkeeper Set</td><td>Chaitanya Ramarao</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="4">Wicketkeeper Set</td>
+                <td style="width: 50%;">Chaitanya Ramarao</td>
               </tr>
-              <tr><td>DP Prince</td></tr>
-              <tr><td>Guttameedi Jayanth</td></tr>
-              <tr><td>Surendra Suri</td></tr>
+              <tr><td style="width: 50%;">DP Prince</td></tr>
+              <tr><td style="width: 50%;">Guttameedi Jayanth</td></tr>
+              <tr><td style="width: 50%;">Surendra Suri</td></tr>
 
               <!-- Batting Allrounder Set 1 -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="7">Batting Allrounder Set 1</td><td>Ashok Gullapalli</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="7">Batting Allrounder Set 1</td>
+                <td style="width: 50%;">Ashok Gullapalli</td>
               </tr>
-              <tr><td>Bhargav Tharivitla</td></tr>
-              <tr><td>Harsha Cherry</td></tr>
-              <tr><td>Nagendra Thurpanati</td></tr>
-              <tr><td>Naveen Kumar</td></tr>
-              <tr><td>Prashanth Shetty</td></tr>
-              <tr><td>Teja Machiraju</td></tr>
+              <tr><td style="width: 50%;">Bhargav Tharivitla</td></tr>
+              <tr><td style="width: 50%;">Harsha Cherry</td></tr>
+              <tr><td style="width: 50%;">Nagendra Thurpanati</td></tr>
+              <tr><td style="width: 50%;">Naveen Kumar</td></tr>
+              <tr><td style="width: 50%;">Prashanth Shetty</td></tr>
+              <tr><td style="width: 50%;">Teja Machiraju</td></tr>
 
               <!-- Bowling Allrounder Set 1 -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="6">Bowling Allrounder Set 1</td><td>Dileep Kumar</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="6">Bowling Allrounder Set 1</td>
+                <td style="width: 50%;">Dileep Kumar</td>
               </tr>
-              <tr><td>Govardhan Bolisetty</td></tr>
-              <tr><td>Harivardhan Reddy</td></tr>
-              <tr><td>Prashant Addanki</td></tr>
-              <tr><td>Praveen Yadav</td></tr>
-              <tr><td>Swedhan Kumar</td></tr>
+              <tr><td style="width: 50%;">Govardhan Bolisetty</td></tr>
+              <tr><td style="width: 50%;">Harivardhan Reddy</td></tr>
+              <tr><td style="width: 50%;">Prashant Addanki</td></tr>
+              <tr><td style="width: 50%;">Praveen Yadav</td></tr>
+              <tr><td style="width: 50%;">Swedhan Kumar</td></tr>
             </table>
           </div>
           <div class="player-set" id="player-set-table2">
-            <table style="border-collapse: collapse; width: 100%; border: 2px solid #ccc;">
+            <table style="border-collapse: collapse; width: 100%; border: 2px solid #ccc; table-layout: fixed;">
               <!-- Batsman Set -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="3">Batsman Set</td><td>Manikanta Nani</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="3">Batsman Set</td>
+                <td style="width: 50%;">Manikanta Nani</td>
               </tr>
-              <tr><td>Ramakrishna RK</td></tr>
-              <tr><td>Upendra Meesala</td></tr>
+              <tr><td style="width: 50%;">Ramakrishna RK</td></tr>
+              <tr><td style="width: 50%;">Upendra Meesala</td></tr>
 
               <!-- Batting Allrounder Set 2 -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="7">Batting Allrounder Set 2</td><td>Aravind Chatlapally</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="7">Batting Allrounder Set 2</td>
+                <td style="width: 50%;">Aravind Chatlapally</td>
               </tr>
-              <tr><td>Manoj Manu</td></tr>
-              <tr><td>Naga Akhil</td></tr>
-              <tr><td>Nazam Mohammed</td></tr>
-              <tr><td>R Sudheer</td></tr>
-              <tr><td>Sai Charan</td></tr>
-              <tr><td>UV Prasad</td></tr>
+              <tr><td style="width: 50%;">Manoj Manu</td></tr>
+              <tr><td style="width: 50%;">Naga Akhil</td></tr>
+              <tr><td style="width: 50%;">Nazam Mohammed</td></tr>
+              <tr><td style="width: 50%;">R Sudheer</td></tr>
+              <tr><td style="width: 50%;">Sai Charan</td></tr>
+              <tr><td style="width: 50%;">UV Prasad</td></tr>
 
               <!-- Bowler Set -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="4">Bowler Set</td><td>Dr.Sandeep Bhardwaj</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="4">Bowler Set</td>
+                <td style="width: 50%;">Dr.Sandeep Bhardwaj</td>
               </tr>
-              <tr><td>Sunil Sunny</td></tr>
-              <tr><td>Prabhakar</td></tr>
-              <tr><td>Saidavali Saida</td></tr>
+              <tr><td style="width: 50%;">Sunil Sunny</td></tr>
+              <tr><td style="width: 50%;">Prabhakar</td></tr>
+              <tr><td style="width: 50%;">Saidavali Saida</td></tr>
 
               <!-- Batting Allrounder Set 3 -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="8">Batting Allrounder Set 3</td><td>Abhinay Abhi</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="8">Batting Allrounder Set 3</td>
+                <td style="width: 50%;">Abhinay Abhi</td>
               </tr>
-              <tr><td>Kiran Reddy</td></tr>
-              <tr><td>Phani Goud</td></tr>
-              <tr><td>Sai Ram</td></tr>
-              <tr><td>Shiva Gadapa</td></tr>
-              <tr><td>Srikanth Srik</td></tr>
-              <tr><td>Tharun Raj</td></tr>
-              <tr><td>Uday Hitman</td></tr>
+              <tr><td style="width: 50%;">Kiran Reddy</td></tr>
+              <tr><td style="width: 50%;">Phani Goud</td></tr>
+              <tr><td style="width: 50%;">Sai Ram</td></tr>
+              <tr><td style="width: 50%;">Shiva Gadapa</td></tr>
+              <tr><td style="width: 50%;">Srikanth Srik</td></tr>
+              <tr><td style="width: 50%;">Tharun Raj</td></tr>
+              <tr><td style="width: 50%;">Uday Hitman</td></tr>
 
               <!-- Bowling Allrounder Set 2 -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="7">Bowling Allrounder Set 2</td><td>Sathish Tillu</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="7">Bowling Allrounder Set 2</td>
+                <td style="width: 50%;">Sathish Tillu</td>
               </tr>
-              <tr><td>Harsha Ram</td></tr>
-              <tr><td>KV Teja</td></tr>
-              <tr><td>Mahesh Kansanpally</td></tr>
-              <tr><td>Saikiran Karra</td></tr>
-              <tr><td>Suhas Thipparthi</td></tr>
-              <tr><td>Vikas Vicky</td></tr>
+              <tr><td style="width: 50%;">Harsha Ram</td></tr>
+              <tr><td style="width: 50%;">KV Teja</td></tr>
+              <tr><td style="width: 50%;">Mahesh Kansanpally</td></tr>
+              <tr><td style="width: 50%;">Saikiran Karra</td></tr>
+              <tr><td style="width: 50%;">Suhas Thipparthi</td></tr>
+              <tr><td style="width: 50%;">Vikas Vicky</td></tr>
 
               <!-- Unsold Players - Round 2 -->
               <tr style="border-top: 2px solid #ccc;">
-                <td style="border-right: 2px solid #ccc;" rowspan="2">Unsold Players - Round 2</td><td>?</td>
+                <td style="border-right: 2px solid #ccc; width: 50%;" rowspan="2">Unsold Players - Round 2</td>
+                <td style="width: 50%;">?</td>
               </tr>
-              <tr><td>?</td></tr>
+              <tr><td style="width: 50%;">?</td></tr>
             </table>
           </div>
         </div>
@@ -932,28 +960,28 @@
       <p>The franchises are the heart of the UCL. Each franchise is a unique entity with its own identity, culture, and set of players.</p>
       <div id="teams_grid">
         <div class="teams_card">
-          <img src="season2/Cric Masters.jpg" alt="Sons of Pitches"/>
+          <img src="season2/CM-ts.png" alt=""/>
           <div class="teams_card_hover_box">
             <b>Cric Masters</b>
             <p>Abhishek Sai</p>
           </div>
         </div>
         <div class="teams_card">
-          <img src="season2/Iron Giants.jpg" alt="Cricket Addicts"/>
+          <img src="season2/Ir--ts.png" alt=""/>
           <div class="teams_card_hover_box">
             <b>Iron Giants</b>
             <p>Chanukya Kotagiri</p>
           </div>
         </div>
         <div class="teams_card">
-          <img src="season2/Lightning Bolts.jpg" alt="House of Dragons"/>
+          <img src="season2/Lb-ts.png" alt=""/>
           <div class="teams_card_hover_box">
             <b>Lightning Bolts</b>
             <p>Vishal Vishnu</p>
           </div>
         </div>
         <div class="teams_card">
-          <img src="season2/Kinetic Warriors.jpg" alt="Sir_King Makers"/>
+          <img src="season2/KW-ts.png" alt=""/>
           <div class="teams_card_hover_box">
             <b>Kinetic Warriors</b>
             <p>Abhilash Kenny</p>
