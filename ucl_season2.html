@@ -137,7 +137,7 @@
       /* Instead of a fixed width of 1000px, let it shrink on small screens: */
       width: 90%;
       max-width: 1000px;
-      padding: 0 0 50px 0;
+      padding: 0 0 0px 0;
       background: rgba(255, 255, 255, 0.0);
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.0);
@@ -165,7 +165,7 @@
     #players_grid {
         display: flex;
         flex-wrap: wrap;
-        justify-content: space-between;
+        justify-content: center;
         gap: 24px;
         overflow: auto;
         max-height: min(550px, 50vh);
@@ -278,7 +278,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 24px;
-      margin-bottom: 32px;
+      margin-bottom: 0px;
     }
 
     #teams #teams_grid .teams_card {
@@ -426,8 +426,8 @@
 
       /* DETAILS: remove fixed positioning so it can scroll naturally */
       .details {
-        top: 42px;
-        max-height: calc(100vh - 360px);
+        top: 0px;
+        max-height: calc(100vh - 250px);
         position: relative;
       }
       .details h2 {
@@ -510,6 +510,10 @@
       #player-sets-container {
         grid-template-columns: 1fr;
       }
+
+      .auction-inner-tab-content, #auction-inner-tabs {
+        zoom: 0.8;
+      }
       
     }
   </style>
@@ -517,7 +521,8 @@
   <script>
 
 function adjustZoom() {
-        const zoomRatio = window.innerWidth / 1000;
+        let zoomRatio = window.innerWidth / 1000;
+        if (zoomRatio > 1) zoomRatio = 1;
         //document.body.style.zoom = zoomRatio;
         //document.getElementById('headerStrip-player-info').style.zoom = zoomRatio;
         //document.getElementById('headerStrip-player-name').style.fontSize = '32px';
