@@ -498,6 +498,19 @@
         transform: translate(0px, 120px) scale(1.25);
       }
 
+      #player-sets-container {
+        grid-template-columns: 1fr;
+      }
+
+      #countdownTimer p {
+        grid-template-columns: repeat(4, 100px);
+        grid-template-rows: 100px 32px;
+        grid-column-gap: 16px;
+      }
+
+      #countdownTimer p span:nth-child(n+1):nth-child(-n+4) {
+        font-size: 50px;
+      }
       
     }
   </style>
