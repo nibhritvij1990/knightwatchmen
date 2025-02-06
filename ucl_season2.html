@@ -88,7 +88,7 @@
 
     /* Submenu */
     .submenu {
-      background-color: rgba(88, 88, 159, 0);
+      background-color: #58589f00;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0);
       color: #fff; 
@@ -141,6 +141,7 @@
       background: rgba(255, 255, 255, 0.0);
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.0);
+      overflow-y: auto;
     }
 
     .details h2 {
@@ -208,6 +209,68 @@
 
     .players_card_name b {
       text-transform: capitalize;
+    }
+
+    #auction-inner-tabs {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    #auction-inner-tab-1, #auction-inner-tab-2 {
+      flex-basis: 100%;
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px 24px;
+      border-radius: 8px 8px 0 0;
+      background-color: #cccccc;
+      color: rgba(16, 9, 89, 0.75);
+      border-bottom: 4px solid #cccccc;
+      cursor: pointer;
+    }
+
+    .auction-inner-tab.active {
+      border-bottom-color: #fe0188 !important;
+      background-color: #ffffff !important;
+      color: #100959 !important;
+      font-weight: bold !important;
+    }
+
+    .auction-inner-tab-content {
+      display: none;
+      text-align: left;
+    }
+
+    .auction-inner-tab-content * {
+      color: #ffffff !important; 
+      text-align: left !important;
+    }
+
+    p.disclaimer {
+      font-style: italic !important;
+    }
+
+    .auction-inner-tab-content.active {
+      display: block;
+    }
+
+    #player-sets-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .player-set table td {
+      padding: 2px 8px;
+    }
+
+    .player-set table td[rowspan] {
+      background-color: #fe0188;
+      color: #ffffff;
+      font-weight: bold;
     }
 
     /* Teams Grid */
@@ -575,6 +638,11 @@
               var now = new Date().getTime();
               var distance = countDownDate - now;
 
+              var oldDays = document.getElementById("days").textContent;
+              var oldHours = document.getElementById("hours").textContent;
+              var oldMinutes = document.getElementById("minutes").textContent;
+              var oldSeconds = document.getElementById("seconds").textContent;
+
               // Time calculations
               var days = Math.floor(distance / (1000 * 60 * 60 * 24));
               var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -587,6 +655,25 @@
               document.getElementById("minutes").textContent = String(minutes).padStart(2, '0');
               document.getElementById("seconds").textContent = String(seconds).padStart(2, '0');
 
+              const cardFlip = [
+                { transform: "rotate(0)" },
+                { transform: "rotateX(-180deg)" },
+              ];
+
+              const cardFlipTiming = {
+                duration: 0,
+                iterations: 1,
+              };
+
+              const dayCard = document.getElementById("days");
+              const hourCard = document.getElementById("hours");
+              const minuteCard = document.getElementById("minutes");
+              const secondCard = document.getElementById("seconds");
+              if (oldDays != days) dayCard.animate(cardFlip, cardFlipTiming);
+              if (oldHours != hours) hourCard.animate(cardFlip, cardFlipTiming);
+              if (oldMinutes != minutes) minuteCard.animate(cardFlip, cardFlipTiming);
+              if (oldSeconds != seconds) secondCard.animate(cardFlip, cardFlipTiming);
+
               // If countdown is finished
               if (distance < 0) {
                 clearInterval(countdownInterval);
@@ -598,6 +685,232 @@
 
         </div>
       </div>
+      <div id="auction-inner-tabs">
+        <div id="auction-inner-tab-1" class="auction-inner-tab active" data-tab="rules">
+          <span>Auction Rules</span>
+        </div>
+        <div id="auction-inner-tab-2" class="auction-inner-tab" data-tab="sets">
+          <span>Auction Sets</span>
+        </div>
+      </div>
+      <div id="auction-inner-tab-content-rules" class="auction-inner-tab-content active">
+        <h2>Rules of the Auctions</h2>
+      <b>Preamble:</b>
+        <p>This document outlines the official rules and regulations governing the player auction for the United Cricket League (UCL) Season 2. All participating franchises and individuals involved in the auction process are expected to adhere to these rules to ensure a fair and transparent team formation process.</p>                 
+        <b>Article 1: Franchise Structure and Purse Allocation</b>
+        <ol>
+            <li>The UCL will consist of four (4) distinct franchises.</li>
+            <li>Each franchise will be allocated a total purse of Three Thousand and One (3001) Dollars for player acquisitions during the auction.</li>
+        </ol>                 
+        <b>Article 2: Player Base Price and Pool</b>
+        <ol>
+            <li>All 4 captains are listed at a base price of One (1) Dollar.</li>
+            <li>The base price for every other player in the auction pool is Fifty (50) Dollars.</li>
+            <li>The total number of players available in the auction pool is Sixty (60) - 4 Captains + 56 Players.</li>
+        </ol>                 
+        <b>Article 3: Team Composition</b>
+        <ol>
+            <li>Each franchise is mandated to acquire exactly Fifteen (15) players through the auction process - 1 Captain + 14 Players.</li>
+        </ol>                
+        <b>Article 4: Bidding Increments</b>
+        <p>The bidding process will adhere to the following incremental structure:</p>
+        <ul>
+            <li>From Fifty (50)  Dollars up to One Hundred and Fifty (150)  Dollars, bids shall increase in increments of Ten (10)  Dollars.</li>
+            <li>From One Hundred and Fifty (150)  Dollars up to Three Hundred and Fifty (350)  Dollars, bids shall increase in increments of Twenty (20)  Dollars.</li>
+            <li>From Three Hundred and Fifty (350)  Dollars up to Eight Hundred (800)  Dollars, bids shall increase in increments of Fifty (50)  Dollars.</li>
+            <li>Above Eight Hundred (800)  Dollars, bids shall increase in increments of One Hundred (100)  Dollars.</li>
+        </ul>
+        <p>Jump bids, where a franchise bids an amount exceeding the permissible increment, are strictly prohibited and will not be accepted. The auctioneer's decision on the validity of a bid will be final.</p>                
+        <b>Article 5: Auction Sequence and Player Categories</b>
+        <ol>
+            <li>The auction process will commence with each franchise nominating and acquiring either a Captain or a Trainer.</li>
+            <li>Following the Captain/Trainer selections, the auction of ten (10) marquee players, designated as "Starter Pokemon," will take place. These players will be auctioned individually.</li>
+            <li>The remaining players will be categorized into the following groups:
+            <ul>
+                <li>Batsmen</li>
+                <li>Bowlers</li>
+                <li>Batting All-rounders</li>
+                <li>Bowling All-rounders</li>
+                <li>Wicket-keepers</li>
+            </ul>
+            </li>
+            <li>The order in which these player groups are presented for auction will be decided and communicated beforehand.</li>
+            <li>Within each player group, the order in which individual players are put up for auction will be determined randomly at the time of the auction.</li>
+        </ol>                 
+        <b>Article 6: Retentions and Right to Match (RTM)</b>
+        <ol>
+            <li>The concept of player retentions from previous seasons (if any) is not applicable for this auction.</li>
+            <li>The Right to Match (RTM) card, allowing franchises to match the highest bid for a former player, will not be in effect for this auction.</li>
+        </ol>                
+        <b>Article 7: Unsold Players</b>
+        <ol>
+            <li>Any players who remain unsold after the initial auction rounds for all predefined player groups are completed will be combined into a single "Unsold Players" category.</li>
+            <li>These unsold players will be put up for auction again. Franchises will have the opportunity to bid on these players to fulfill their mandatory team quota of fifteen (15) players.</li>
+        </ol>                
+        <b>Article 8: Mandatory Player Acquisition</b>
+        <ol>
+            <li>Each of the four (4) franchises is obligated to acquire a total of fifteen (15) players by the conclusion of the auction process.</li>
+            <li>The auction will continue until all sixty (60) players have been successfully acquired by the participating franchises.</li>
+        </ol>                
+        <b>Article 9: General Conduct</b>
+        <ol>
+            <li>All participants are expected to conduct themselves in a sportsmanlike and respectful manner throughout the auction process.</li>
+            <li>Any disputes or clarifications regarding the auction rules will be addressed by the designated auction organizers, whose decisions will be final.</li>
+        </ol>   
+
+      <!-- Additional rules truncated for brevity... -->
+      <p class="disclaimer">
+        <strong>Disclaimer:</strong> These rules are designed to facilitate a smooth and enjoyable auction process for the UCL. The organizers reserve the right to make minor adjustments to these rules if deemed necessary, with prior communication to all participating franchises.
+      </p>
+      </div>
+      <div id="auction-inner-tab-content-sets" class="auction-inner-tab-content">
+        <h2>Players Sets for the Auctions</h2>
+        <p>The following are the sets of players that will be available for auction in the UCL Season 2. The auctions will start at 5PM sharp on Sunday, 9th February 2025.</p>
+
+        <div id="player-sets-container">
+          <div class="player-set" id="player-set-table1">
+            <table style="border-collapse: collapse; width: 100%; border: 2px solid #ccc;">
+              <!-- Captain/Owner -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="4">Captain/Owner</td><td>Abhilash Kenny</td>
+              </tr>
+              <tr><td>Abhishek Sai</td></tr>
+              <tr><td>Chanukya Kotagiri</td></tr>
+              <tr><td>Vishal Vishnu Vardhan</td></tr>
+
+              <!-- Starter Pokemon -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="10">Starter Pokemon</td><td>Dr.Ravi Badavath</td>
+              </tr>
+              <tr><td>Nibhrit Vij</td></tr>
+              <tr><td>Pradeep Siriki</td></tr>
+              <tr><td>Prash Prash...</td></tr>
+              <tr><td>Raghu Uyyala</td></tr>
+              <tr><td>Suresh Giri</td></tr>
+              <tr><td>Vamshi Banda</td></tr>
+              <tr><td>Venugopal Kondoor</td></tr>
+              <tr><td>Harsha Yalamati</td></tr>
+              <tr><td>Pratik Daine</td></tr>
+
+              <!-- Wicketkeeper Set -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="4">Wicketkeeper Set</td><td>Chaitanya Ramarao</td>
+              </tr>
+              <tr><td>DP Prince</td></tr>
+              <tr><td>Guttameedi Jayanth</td></tr>
+              <tr><td>Surendra Suri</td></tr>
+
+              <!-- Batting Allrounder Set 1 -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="7">Batting Allrounder Set 1</td><td>Ashok Gullapalli</td>
+              </tr>
+              <tr><td>Bhargav Tharivitla</td></tr>
+              <tr><td>Harsha Cherry</td></tr>
+              <tr><td>Nagendra Thurpanati</td></tr>
+              <tr><td>Naveen Kumar</td></tr>
+              <tr><td>Prashanth Shetty</td></tr>
+              <tr><td>Teja Machiraju</td></tr>
+
+              <!-- Bowling Allrounder Set 1 -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="6">Bowling Allrounder Set 1</td><td>Dileep Kumar</td>
+              </tr>
+              <tr><td>Govardhan Bolisetty</td></tr>
+              <tr><td>Harivardhan Reddy</td></tr>
+              <tr><td>Prashant Addanki</td></tr>
+              <tr><td>Praveen Yadav</td></tr>
+              <tr><td>Swedhan Kumar</td></tr>
+            </table>
+          </div>
+          <div class="player-set" id="player-set-table2">
+            <table style="border-collapse: collapse; width: 100%; border: 2px solid #ccc;">
+              <!-- Batsman Set -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="3">Batsman Set</td><td>Manikanta Nani</td>
+              </tr>
+              <tr><td>Ramakrishna RK</td></tr>
+              <tr><td>Upendra Meesala</td></tr>
+
+              <!-- Batting Allrounder Set 2 -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="7">Batting Allrounder Set 2</td><td>Aravind Chatlapally</td>
+              </tr>
+              <tr><td>Manoj Manu</td></tr>
+              <tr><td>Naga Akhil</td></tr>
+              <tr><td>Nazam Mohammed</td></tr>
+              <tr><td>R Sudheer</td></tr>
+              <tr><td>Sai Charan</td></tr>
+              <tr><td>UV Prasad</td></tr>
+
+              <!-- Bowler Set -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="4">Bowler Set</td><td>Dr.Sandeep Bhardwaj</td>
+              </tr>
+              <tr><td>Sunil Sunny</td></tr>
+              <tr><td>Prabhakar</td></tr>
+              <tr><td>Saidavali Saida</td></tr>
+
+              <!-- Batting Allrounder Set 3 -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="8">Batting Allrounder Set 3</td><td>Abhinay Abhi</td>
+              </tr>
+              <tr><td>Kiran Reddy</td></tr>
+              <tr><td>Phani Goud</td></tr>
+              <tr><td>Sai Ram</td></tr>
+              <tr><td>Shiva Gadapa</td></tr>
+              <tr><td>Srikanth Srik</td></tr>
+              <tr><td>Tharun Raj</td></tr>
+              <tr><td>Uday Hitman</td></tr>
+
+              <!-- Bowling Allrounder Set 2 -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="7">Bowling Allrounder Set 2</td><td>Sathish Tillu</td>
+              </tr>
+              <tr><td>Harsha Ram</td></tr>
+              <tr><td>KV Teja</td></tr>
+              <tr><td>Mahesh Kansanpally</td></tr>
+              <tr><td>Saikiran Karra</td></tr>
+              <tr><td>Suhas Thipparthi</td></tr>
+              <tr><td>Vikas Vicky</td></tr>
+
+              <!-- Unsold Players - Round 2 -->
+              <tr style="border-top: 2px solid #ccc;">
+                <td style="border-right: 2px solid #ccc;" rowspan="2">Unsold Players - Round 2</td><td>?</td>
+              </tr>
+              <tr><td>?</td></tr>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <script>
+      document.querySelectorAll('.auction-inner-tab').forEach((tab) => {
+        tab.addEventListener('click', function() {
+          // Remove "active" from all auction-inner-tab elements
+          document.querySelectorAll('.auction-inner-tab').forEach((t) => {
+            t.classList.remove('active');
+          });
+
+          // Add "active" to the clicked element
+          this.classList.add('active');
+
+          // Get the data-tab attribute
+          const dataTab = this.getAttribute('data-tab');
+
+          // Remove "active" from all auction-inner-tab-content elements
+          document.querySelectorAll('.auction-inner-tab-content').forEach((content) => {
+            content.classList.remove('active');
+          });
+
+          // Add "active" to the relevant content
+          const targetContent = document.getElementById(`auction-inner-tab-content-${dataTab}`);
+          if (targetContent) {
+            targetContent.classList.add('active');
+          }
+        });
+      });
+      </script>
     </div>
 
     <!-- TEAMS -->
