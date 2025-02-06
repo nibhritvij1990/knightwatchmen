@@ -530,10 +530,10 @@ function adjustZoom() {
           ele.style.zoom = zoomRatio;
         });
       }
-      if (window.innerHeight < 975) {
-        window.addEventListener('resize', adjustZoom);
-        window.addEventListener('load', adjustZoom);
-      }
+      
+      window.addEventListener('resize', adjustZoom);
+      window.addEventListener('load', adjustZoom);
+      
 
 
     document.addEventListener("DOMContentLoaded", function() {
