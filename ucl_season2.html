@@ -514,6 +514,31 @@
       }
       
     }
+
+    #auction-assets-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .auction-assets-links {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .auction-assets-links a {
+      color: #fe0188;
+      text-decoration: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    
+    
   </style>
 
   <script>
@@ -647,9 +672,17 @@ function adjustZoom() {
     <!-- AUCTION -->
     <div id="auction" style="display: none;">
       <h2>UCL Season 2 <span>Auction</span></h2>
-      <p><b>UCL Season 2 player auction is scheduled to begin at 5PM on Sunday, 9th February 2025! 🏏 🔥</b></p>
+      <p><b id="auction-timer-text-title">UCL Season 2 player auction is scheduled to begin at 5:30 PM on Sunday, 9th February 2025! 🏏 🔥</b></p>
       <div id="auction_grid">
-        <div class="auction_timer">
+        <div id="auction-assets-container">
+          <div class="video-container">
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/aKPeafVLGGU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <div class="auction-assets-links">
+            <a href="https://united-cricket-league.loca.lt/summary.html?auctionId=677cd0286877dbfe9da743a6" target="_blank">Auction Summary</a>
+            <span><strong>Password:</strong> 49.205.255.48</span>
+          </div>
+        </div>
         <div id="countdownTimer">
           <p>
             <span id="days"></span>
@@ -665,7 +698,7 @@ function adjustZoom() {
         <script>
           (function() {
             // Set the date and time for auction start: 5PM IST, 9th Feb 2025
-            var countDownDate = new Date("Feb 9, 2025 17:00:00 GMT+5:30").getTime();
+            var countDownDate = new Date("Feb 9, 2025 17:30:00 GMT+5:30").getTime();
 
             // Update the countdown every second
             var countdownInterval = setInterval(function() {
@@ -711,13 +744,15 @@ function adjustZoom() {
               // If countdown is finished
               if (distance < 0) {
                 clearInterval(countdownInterval);
-                document.getElementById("countdownTimer").innerHTML = "<p>The Auction Has Started!</p>";
+                document.getElementById("countdownTimer").style.display = "none";
+                document.getElementById("auction-assets-container").style.display = "flex";
+                document.getElementById("auction-timer-text-title").textContent = "The Auction Is Now Live!";
               }
             }, 1000);
           })();
         </script>
 
-        </div>
+        
       </div>
       <div id="auction-inner-tabs">
         <div id="auction-inner-tab-1" class="auction-inner-tab active" data-tab="rules">
@@ -972,7 +1007,7 @@ function adjustZoom() {
         <div class="teams_card">
           <img src="season2/CM-ts.png" alt=""/>
           <div class="teams_card_hover_box">
-            <b>🏏 Meet - Cric Masters! 🏏</b>
+            <b>🏏Meet - Cric Masters!🏏</b>
             <p>Fueled by energy, driven by force—these warriors are always on the move! The Green Gladiators bring unmatched power and relentless spirit to the field. With every swing, every run, and every play, they’ll charge forward, leaving no room for defeat. Get ready, because the Kinetic Warriors are here to conquer with pure momentum!</p>
             <p>#KineticWarriors #UCLSeason2 #UnstoppableEnergy 💥</p>
           </div>
@@ -980,7 +1015,7 @@ function adjustZoom() {
         <div class="teams_card">
           <img src="season2/Ir--ts.png" alt=""/>
           <div class="teams_card_hover_box">
-            <b>🔥 Presenting - Iron Giants! 🔥</b>
+            <b>🔥Presenting - Iron Giants!🔥</b>
             <p>Built like steel, playing with fire. The Red Titans are here to dominate with sheer strength and unbreakable determination. No challenge is too big, no rival too strong—these giants are set to crush the competition and stand tall as champions. Brace yourselves, because the Iron Giants are here to reign supreme!</p>
             <p>#IronGiants #UCLSeason2 #StrengthInEveryStrike 💪🔥</p>
           </div>
@@ -988,7 +1023,7 @@ function adjustZoom() {
         <div class="teams_card">
           <img src="season2/Lb-ts.png" alt=""/>
           <div class="teams_card_hover_box">
-            <b>⚡ Introducing - Lightning Bolts! ⚡</b>
+            <b>⚡Introducing - Lightning Bolts!⚡</b>
             <p>When speed meets power, the storm begins. With lightning-fast reflexes and an unstoppable energy, this team is here to strike fear into their opponents. The Yellow Brigade is ready to electrify the field and light up the scoreboard. Brace yourselves, because the Lightning Bolts are here to shock the competition and claim victory!</p>
             <p>#LightningBolts #UCLSeason2 #FeelTheThunder ⚡</p>
           </div>
@@ -996,7 +1031,7 @@ function adjustZoom() {
         <div class="teams_card">
           <img src="season2/KW-ts.png" alt=""/>
           <div class="teams_card_hover_box">
-            <b>💥 Unveiling - Kinetic Warriors! 💥</b>
+            <b>💥Unveiling - Kinetic Warriors!💥</b>
             <p>Fueled by energy, driven by force—these warriors are always on the move! The Green Gladiators bring unmatched power and relentless spirit to the field. With every swing, every run, and every play, they’ll charge forward, leaving no room for defeat. Get ready, because the Kinetic Warriors are here to conquer with pure momentum!
             </p>
             <p>#KineticWarriors #UCLSeason2 #UnstoppableEnergy 💥</p>
