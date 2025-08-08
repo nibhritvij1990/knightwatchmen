@@ -1,3 +1,6 @@
-[build]
-  command = "cd squad-draft && npm ci && npm run build && cp -R dist/* ."
-  publish = "."
+  [build]
+    command = "cd squad-draft && npm ci && npm run build && cp -R dist/* ."
+    publish = "."
+
+  [build.environment]
+    NODE_VERSION = "20.19.0"
