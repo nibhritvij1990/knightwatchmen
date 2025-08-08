@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { createPortal } from 'react-dom';
+import { ArrowDownTrayIcon, ArrowUpTrayIcon, PencilSquareIcon, TrashIcon, ArrowUturnLeftIcon, ArrowLeftIcon, SunIcon, MoonIcon, PlusIcon } from '@heroicons/react/24/solid';
 
 function ModalShell({ open, title, children, onClose }) {
   if (!open) return null;
@@ -74,6 +75,39 @@ function AddPlayerModal({ open, onCancel, onSubmit }) {
   );
 }
 
+function EditPlayerModal({ open, onCancel, onSubmit, player }) {
+  const [name, setName] = useState(player?.name || '');
+  const [notes, setNotes] = useState(player?.notes || '');
+
+  useEffect(() => {
+    if (open) {
+      setName(player?.name || '');
+      setNotes(player?.notes || '');
+    }
+  }, [open, player]);
+
+  const disabled = !name.trim();
+
+  return (
+    <ModalShell open={open} title="Edit Player" onClose={onCancel}>
+      <form onSubmit={(e) => { e.preventDefault(); if (disabled || !player) return; onSubmit({ ...player, name: name.trim(), notes: notes.trim() }); }} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Name</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} autoFocus className="w-full px-3 py-2 rounded-lg border border-slate-200/70 dark:border-white/10 bg-white dark:bg-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="w-full px-3 py-2 rounded-lg border border-slate-200/70 dark:border-white/10 bg-white dark:bg-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" />
+        </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" onClick={onCancel} className="px-3 py-2 rounded-full bg-slate-200/70 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancel</button>
+          <button type="submit" disabled={disabled} className={`px-3 py-2 rounded-full transition ${disabled ? 'opacity-50 bg-brand-600 text-white' : 'bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700'}`}>Save</button>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
 function ImportCSVModal({ open, onCancel, onImport }) {
   const [text, setText] = useState('');
 
@@ -93,10 +127,30 @@ function ImportCSVModal({ open, onCancel, onImport }) {
   );
 }
 
-function PlayerCard({ id, player, index, onEdit, onRemove }) {
+function ImportJSONModal({ open, onCancel, onImport }) {
+  const [text, setText] = useState('');
+  useEffect(() => { if (open) setText(''); }, [open]);
+  return (
+    <ModalShell open={open} title="Import Board from JSON" onClose={onCancel}>
+      <div className="space-y-3">
+        <p className="text-sm text-slate-600 dark:text-slate-400">Paste a full board export (JSON).</p>
+        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={10} className="w-full px-3 py-2 rounded-lg border border-slate-200/70 dark:border-white/10 bg-white dark:bg-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" placeholder='{"players": {"id": {"id":"id","name":"Alice"}}, "availableOrder": ["id"], "buckets": {"yes":[],"maybe":[],"no":[]}}' />
+        <div className="flex justify-end gap-2 pt-1">
+          <button type="button" onClick={onCancel} className="px-3 py-2 rounded-full bg-slate-200/70 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancel</button>
+          <button type="button" onClick={() => onImport(text)} disabled={!text.trim()} className={`px-3 py-2 rounded-full transition ${!text.trim() ? 'opacity-50 bg-brand-600 text-white' : 'bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700'}`}>Import</button>
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
+function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable }) {
+  const [isHovering, setIsHovering] = useState(false);
   return (
     <Draggable draggableId={id} index={index}>
       {(provided, snapshot) => {
+        const isActive = isHovering || snapshot.isDragging;
+        const activeClass = isActive ? 'ring-2 ring-brand-400 dark:ring-brand-300 ring-offset-1 ring-offset-white dark:ring-offset-slate-900 shadow-lg z-50' : '';
         const card = (
           <motion.div
             ref={provided.innerRef}
@@ -104,15 +158,27 @@ function PlayerCard({ id, player, index, onEdit, onRemove }) {
             {...provided.dragHandleProps}
             style={provided.draggableProps.style}
             initial={false}
-            className={`select-none cursor-grab active:cursor-grabbing bg-white/90 dark:bg-slate-800/80 rounded-xl shadow-sm ring-1 ring-slate-200/60 dark:ring-white/10 p-3 mb-3 flex justify-between items-start transition duration-200 ${snapshot.isDragging ? 'ring-2 ring-brand-400 shadow-xl z-50' : 'hover:shadow-md dark:hover:shadow-none dark:hover:ring-2 dark:hover:ring-brand-400/40'}`}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+            className={`select-none cursor-grab active:cursor-grabbing bg-white/90 dark:bg-slate-800/80 rounded-xl shadow-sm ring-1 ring-slate-200/60 dark:ring-white/10 p-3 mb-3 flex justify-between items-start transition duration-200 ${activeClass}`}
           >
-                      <div className="flex-1 min-w-0 pr-2">
-            <div className="truncate font-semibold text-sm text-slate-800 dark:text-slate-100" title={player?.name} aria-label={player?.name}>{player?.name}</div>
-            {player?.notes && <div className="truncate text-xs text-slate-500 dark:text-slate-400" title={player?.notes} aria-label={player?.notes}>{player.notes}</div>}
-          </div>
-          <div className="ml-2 flex items-center gap-2 shrink-0">
-              <button type="button" onClick={() => onEdit(player)} className="text-xs px-2 py-1 rounded-md bg-brand-50 text-brand-700 dark:bg-brand-900/50 dark:text-brand-200 hover:bg-brand-100 dark:hover:bg-brand-900 transition">Edit</button>
-              <button type="button" onClick={() => onRemove(player.id)} className="text-xs px-2 py-1 rounded-md bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200 hover:bg-rose-100 dark:hover:bg-rose-900 transition">Remove</button>
+            <div className="flex-1 min-w-0 pr-2">
+              <div className="truncate font-semibold text-sm text-slate-800 dark:text-slate-100" title={player?.name} aria-label={player?.name}>{player?.name}</div>
+              {player?.notes && <div className="truncate text-xs text-slate-500 dark:text-slate-400" title={player?.notes} aria-label={player?.notes}>{player.notes}</div>}
+            </div>
+            <div className="ml-2 flex items-center gap-2 shrink-0">
+              <button type="button" onClick={() => onEdit(player)} title="Edit" aria-label="Edit" className="text-xs p-1 rounded-md bg-brand-50 text-brand-700 dark:bg-brand-900/50 dark:text-brand-200 hover:bg-brand-100 dark:hover:bg-brand-900 transition">
+                <PencilSquareIcon className="w-4 h-4" />
+              </button>
+              {isInAvailable ? (
+                <button type="button" onClick={() => onRemove(player.id)} title="Delete player" aria-label="Delete player" className="text-xs p-1 rounded-md bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 transition">
+                  <TrashIcon className="w-4 h-4" />
+                </button>
+              ) : (
+                <button type="button" onClick={() => onRemove(player.id)} title="Send to Available" aria-label="Send to Available" className="text-xs p-1 rounded-md bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+                  <ArrowUturnLeftIcon className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </motion.div>
         );
@@ -142,7 +208,7 @@ function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove }) {
         {(provided) => (
           <div ref={provided.innerRef} {...provided.droppableProps} className="min-h-[56vh] pt-1">
             {itemIds.map((id, index) => (
-              <PlayerCard key={id} id={id} index={index} player={playersMap[id]} onEdit={onEdit} onRemove={onRemove} />
+              <PlayerCard key={id} id={id} index={index} player={playersMap[id]} onEdit={onEdit} onRemove={onRemove} isInAvailable={false} />
             ))}
             {provided.placeholder}
           </div>
@@ -196,7 +262,10 @@ export default function App() {
   const [dark, setDark] = useState(() => localStorage.getItem('squad_dark') === '1');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showImportJSON, setShowImportJSON] = useState(false);
+  const [editingPlayer, setEditingPlayer] = useState(null);
   const boardRef = useRef(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -208,9 +277,35 @@ export default function App() {
     return () => clearTimeout(id);
   }, [state]);
 
+  useEffect(() => {
+    function onKeyDown(e) {
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const meta = isMac ? e.metaKey : e.ctrlKey;
+      if (meta && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        searchRef.current?.focus();
+        return;
+      }
+      if (meta && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [undo]);
+
   function snapshotAnd(fn) {
     setLastSnapshot(JSON.parse(JSON.stringify(state)));
     fn();
+  }
+
+  function clearAll() {
+    if (!confirm('Clear all players and draft lists? This cannot be undone.')) return;
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    setLastSnapshot(null);
+    setState({ players: {}, availableOrder: [], buckets: { yes: [], maybe: [], no: [] } });
   }
 
   function addPlayer(name, notes = '') {
@@ -345,6 +440,34 @@ export default function App() {
     }
   }
 
+  function exportJSON() {
+    try {
+      const json = JSON.stringify(state, null, 2);
+      const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'draft_export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Export JSON error', e);
+    }
+  }
+
+  function importJSONText(text) {
+    try {
+      const parsed = JSON.parse(text);
+      if (!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON');
+      if (!parsed.players || !parsed.availableOrder || !parsed.buckets) throw new Error('Missing keys');
+      if (!parsed.buckets.yes || !parsed.buckets.maybe || !parsed.buckets.no) throw new Error('Missing bucket lists');
+      snapshotAnd(() => setState(parsed));
+    } catch (e) {
+      alert('Invalid JSON format for board.');
+      console.error('Import JSON error', e);
+    }
+  }
+
   const filtered = useMemo(() => {
     if (!query) return state;
     const q = query.toLowerCase();
@@ -366,10 +489,7 @@ export default function App() {
   }), [state]);
 
   function handleEdit(player) {
-    const name = prompt('Name', player.name);
-    if (name === null) return;
-    const notes = prompt('Notes', player.notes || '') ?? '';
-    editPlayer({ ...player, name, notes });
+    setEditingPlayer(player);
   }
 
   function handleRemove(id) {
@@ -430,23 +550,45 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-slate-900 dark:text-slate-100 transition-colors">
-      <div className="max-w-7xl mx-auto p-4">
-        <header className="mb-6">
-          <div className="relative overflow-hidden rounded-2xl p-[1px] bg-gradient-to-r from-brand-500 via-accent-400 to-emerald-400">
-            <div className="rounded-2xl bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-3 flex items-center justify-between ring-1 ring-slate-200/60 dark:ring-white/10">
-              <h1 className="text-xl font-extrabold bg-gradient-to-r from-brand-600 via-indigo-600 to-emerald-600 bg-clip-text text-transparent">Squad Draft — Prototype</h1>
-              <div className="flex flex-wrap items-center gap-2">
-                <input className="px-3 py-2 rounded-full border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-800/70 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" placeholder="Search across lists" value={query} onChange={e => setQuery(e.target.value)} />
-                <button className="px-3 py-2 rounded-full bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700 shadow-sm transition" onClick={() => setShowAddModal(true)}>Add</button>
-                <button className="px-3 py-2 rounded-full bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700 shadow-sm transition" onClick={() => setShowImportModal(true)}>Import CSV</button>
-                <div className="border-l border-slate-200/60 dark:border-white/10 pl-2 flex gap-2">
-                  <button className="px-3 py-2 rounded-full bg-slate-900/80 text-white hover:bg-slate-900 transition" onClick={exportCSV}>Export CSV</button>
-                  <button className="px-3 py-2 rounded-full bg-slate-900/80 text-white hover:bg-slate-900 transition" onClick={exportPNG}>Export PNG</button>
-                  <button className="px-3 py-2 rounded-full bg-slate-900/80 text-white hover:bg-slate-900 transition" onClick={exportPDF}>Export PDF</button>
-                </div>
-                <button onClick={undo} disabled={!lastSnapshot} className={`px-3 py-2 rounded-full shadow-sm transition ${lastSnapshot ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'}`}>Undo</button>
-                <button onClick={() => setDark(d => !d)} className="px-3 py-2 rounded-full bg-slate-200/70 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-700 transition">{dark ? 'Light' : 'Dark'}</button>
+      <div className="max-w-7xl mx-auto p-4 space-y-4">
+        {/* Top brand/header bar */}
+        <div className="relative overflow-hidden rounded-2xl p-[1px] bg-gradient-to-r from-brand-500 via-accent-400 to-emerald-400 animated-gradient-border">
+          <div className="rounded-2xl bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-3 flex items-center justify-between ring-1 ring-slate-200/60 dark:ring-white/10">
+            <div className="flex items-center gap-3">
+              <a href="/" className="px-2 py-1.5 rounded-full bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition" title="Back" aria-label="Back">
+                <ArrowLeftIcon className="w-5 h-5" />
+              </a>
+              <h1 className="text-xl font-extrabold bg-gradient-to-r from-brand-600 via-indigo-600 to-emerald-600 bg-clip-text text-transparent">Squad Draft</h1>
+            </div>
+            <button onClick={() => setDark(d => !d)} className="p-2 rounded-full bg-slate-200/70 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title={dark ? 'Switch to light' : 'Switch to dark'} aria-label="Toggle theme">
+              {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Secondary toolbar */}
+        <header className="rounded-2xl ring-1 ring-slate-200/60 dark:ring-white/10 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Left: Add + Imports */}
+            <div className="flex items-center gap-2">
+              <button className="px-3 py-2 rounded-full bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowAddModal(true)} title="Add player" aria-label="Add player"><PlusIcon className="w-5 h-5" /><span>Add</span></button>
+              <button className="px-3 py-2 rounded-full bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowImportModal(true)} title="Import CSV" aria-label="Import CSV"><ArrowUpTrayIcon className="w-5 h-5" /><span>CSV</span></button>
+              <button className="px-3 py-2 rounded-full bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowImportJSON(true)} title="Import JSON" aria-label="Import JSON"><ArrowUpTrayIcon className="w-5 h-5" /><span>JSON</span></button>
+            </div>
+            {/* Middle: Search */}
+            <div className="flex-1 min-w-[200px] flex justify-center">
+              <input ref={searchRef} className="w-full max-w-md px-3 py-2 rounded-full border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-800/70 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" placeholder="Search across lists" value={query} onChange={e => setQuery(e.target.value)} />
+            </div>
+            {/* Right: Exports + Undo + Clear */}
+            <div className="ml-auto flex items-center gap-2">
+              <div className="border-l border-slate-200/60 dark:border-white/10 pl-2 flex gap-2">
+                <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportCSV} title="Export CSV" aria-label="Export CSV"><ArrowDownTrayIcon className="w-5 h-5" /><span>CSV</span></button>
+                <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportPNG} title="Export PNG" aria-label="Export PNG"><ArrowDownTrayIcon className="w-5 h-5" /><span>PNG</span></button>
+                <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportPDF} title="Export PDF" aria-label="Export PDF"><ArrowDownTrayIcon className="w-5 h-5" /><span>PDF</span></button>
+                <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportJSON} title="Export JSON" aria-label="Export JSON"><ArrowDownTrayIcon className="w-5 h-5" /><span>JSON</span></button>
               </div>
+              <button onClick={undo} disabled={!lastSnapshot} className={`px-3 py-2 rounded-full shadow-sm transition ${lastSnapshot ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'}`}>Undo</button>
+              <button onClick={clearAll} className="px-3 py-2 rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm transition">Clear Draft</button>
             </div>
           </div>
         </header>
@@ -465,7 +607,7 @@ export default function App() {
                       {(provided) => (
                         <div ref={provided.innerRef} {...provided.droppableProps} className="min-h-[56vh]">
                           {filtered.availableOrder.map((id, index) => (
-                            <PlayerCard key={id} id={id} index={index} player={filtered.players[id]} onEdit={handleEdit} onRemove={handleRemove} />
+                            <PlayerCard key={id} id={id} index={index} player={filtered.players[id]} onEdit={handleEdit} onRemove={handleRemove} isInAvailable />
                           ))}
                           {provided.placeholder}
                         </div>
@@ -483,29 +625,33 @@ export default function App() {
             </DragDropContext>
           </div>
 
-          {/*
-          <aside className="w-64 hidden md:block">
-            <div className="bg-white/70 dark:bg-slate-800/60 backdrop-blur-md rounded-2xl p-4 shadow-sm ring-1 ring-slate-200/60 dark:ring-white/10">
-              <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-200">Analytics</h4>
-              <div className="text-sm flex items-center justify-between py-1"><span>Available</span><span className="text-slate-500 dark:text-slate-400">{counts.available}</span></div>
-              <div className="text-sm flex items-center justify-between py-1"><span className="text-emerald-700 dark:text-emerald-300">YES</span><span className="text-slate-500 dark:text-slate-400">{counts.yes}</span></div>
-              <div className="text-sm flex items-center justify-between py-1"><span className="text-amber-700 dark:text-amber-300">MAYBE</span><span className="text-slate-500 dark:text-slate-400">{counts.maybe}</span></div>
-              <div className="text-sm flex items-center justify-between py-1"><span className="text-rose-700 dark:text-rose-300">NO</span><span className="text-slate-500 dark:text-slate-400">{counts.no}</span></div>
-            </div>
-          </aside>
-          */}
+          {/* Analytics panel intentionally commented out */}
         </main>
 
+        {/* Modals */}
         <AddPlayerModal
           open={showAddModal}
           onCancel={() => setShowAddModal(false)}
           onSubmit={({ name, notes }) => { setShowAddModal(false); addPlayer(name, notes); }}
         />
 
+        <EditPlayerModal
+          open={!!editingPlayer}
+          player={editingPlayer}
+          onCancel={() => setEditingPlayer(null)}
+          onSubmit={(p) => { setEditingPlayer(null); editPlayer(p); }}
+        />
+
         <ImportCSVModal
           open={showImportModal}
           onCancel={() => setShowImportModal(false)}
           onImport={(text) => { setShowImportModal(false); importCSVText(text); }}
+        />
+
+        <ImportJSONModal
+          open={showImportJSON}
+          onCancel={() => setShowImportJSON(false)}
+          onImport={(text) => { setShowImportJSON(false); importJSONText(text); }}
         />
 
       </div>

@@ -15,3 +15,14 @@ html, body, #root { min-height: 100%; height: auto; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb { @apply bg-slate-300 dark:bg-slate-700 rounded-full; }
 *::-webkit-scrollbar-track { @apply bg-transparent; }
+
+/* Animated gradient border for header wrapper */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animated-gradient-border {
+  background-size: 300% 300%;
+  animation: gradient-shift 12s ease infinite;
+}
