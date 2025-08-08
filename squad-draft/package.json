@@ -1,0 +1,29 @@
+{
+  "name": "squad-draft-prototype",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.0.8",
+    "@dnd-kit/modifiers": "^6.0.1",
+    "@dnd-kit/sortable": "^7.0.2",
+    "framer-motion": "^12.23.12",
+    "html-to-image": "^1.11.13",
+    "jspdf": "^3.0.1",
+    "papaparse": "^5.5.3",
+    "react": "^18.2.0",
+    "@hello-pangea/dnd": "^16.6.0",
+    "react-dom": "^18.2.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.4.0",
+    "vite": "^7.1.1"
+  }
+}
