@@ -1,0 +1,3 @@
+[build]
+  command = "cd squad-draft && npm ci && npm run build && cp -R dist/* ."
+  publish = "."
