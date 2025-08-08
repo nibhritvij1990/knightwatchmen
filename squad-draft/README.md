@@ -21,5 +21,6 @@ Files included:
 - package.json
 
 Notes:
-- The app persists to localStorage (key: squad_draft_v1).
+- The app persists to localStorage (key: squad_draft_v1). No TTL.
 - Export PNG/PDF uses html-to-image and jsPDF.
+- Header split into brand bar (Back + theme) and control bar (search/add/import/export/undo/clear).
