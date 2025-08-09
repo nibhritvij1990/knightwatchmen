@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { createPortal } from 'react-dom';
-import { ArrowDownTrayIcon, ArrowUpTrayIcon, PencilSquareIcon, TrashIcon, ArrowUturnLeftIcon, ArrowLeftIcon, SunIcon, MoonIcon, PlusIcon } from '@heroicons/react/24/solid';
+import { ArrowDownTrayIcon, ArrowUpTrayIcon, PencilSquareIcon, TrashIcon, ArrowUturnLeftIcon, ArrowLeftIcon, SunIcon, MoonIcon, PlusIcon, CheckIcon, QuestionMarkCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 function ModalShell({ open, title, children, onClose }) {
   if (!open) return null;
@@ -144,8 +144,29 @@ function ImportJSONModal({ open, onCancel, onImport }) {
   );
 }
 
-function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable }) {
+function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssign }) {
   const [isHovering, setIsHovering] = useState(false);
+  const [showNameTooltip, setShowNameTooltip] = useState(false);
+  const nameContainerRef = useRef(null);
+  useEffect(() => {
+    if (!showNameTooltip) return;
+    function onDocMouseDown(e) {
+      if (nameContainerRef.current && !nameContainerRef.current.contains(e.target)) {
+        setShowNameTooltip(false);
+      }
+    }
+    function onWinKeyDown(e) {
+      if (e.key === 'Escape') setShowNameTooltip(false);
+    }
+    document.addEventListener('mousedown', onDocMouseDown);
+    window.addEventListener('keydown', onWinKeyDown);
+    const timer = setTimeout(() => setShowNameTooltip(false), 3000);
+    return () => {
+      document.removeEventListener('mousedown', onDocMouseDown);
+      window.removeEventListener('keydown', onWinKeyDown);
+      clearTimeout(timer);
+    };
+  }, [showNameTooltip]);
   return (
     <Draggable draggableId={id} index={index}>
       {(provided, snapshot) => {
@@ -163,10 +184,54 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable }) {
             className={`select-none cursor-grab active:cursor-grabbing bg-white/90 dark:bg-slate-800/80 rounded-xl shadow-sm ring-1 ring-slate-200/60 dark:ring-white/10 p-3 mb-3 flex justify-between items-start transition duration-200 ${activeClass}`}
           >
             <div className="flex-1 min-w-0 pr-2">
-              <div className="truncate font-semibold text-sm text-slate-800 dark:text-slate-100" title={player?.name} aria-label={player?.name}>{player?.name}</div>
+              <div ref={nameContainerRef} className="relative">
+                <div
+                  className="truncate font-semibold text-sm text-slate-800 dark:text-slate-100"
+                  title={player?.name}
+                  aria-label={player?.name}
+                  onClick={() => setShowNameTooltip(v => !v)}
+                >
+                  {player?.name}
+                </div>
+                {showNameTooltip && (
+                  <div role="tooltip" className="absolute left-0 top-full mt-1 z-50 px-2 py-1 rounded-md bg-slate-900 text-white text-xs shadow-lg whitespace-nowrap max-w-none">
+                    {player?.name}
+                  </div>
+                )}
+              </div>
               {player?.notes && <div className="truncate text-xs text-slate-500 dark:text-slate-400" title={player?.notes} aria-label={player?.notes}>{player.notes}</div>}
             </div>
             <div className="ml-2 flex items-center gap-2 shrink-0">
+              {/* Quick assign buttons */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  title="Move to YES"
+                  aria-label="Move to YES"
+                  className="p-1.5 rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:hover:bg-emerald-900/50 transition"
+                  onClick={() => onAssign && onAssign(player.id, 'yes')}
+                >
+                  <CheckIcon className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  title="Move to MAYBE"
+                  aria-label="Move to MAYBE"
+                  className="p-1.5 rounded-md bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/50 transition"
+                  onClick={() => onAssign && onAssign(player.id, 'maybe')}
+                >
+                  <QuestionMarkCircleIcon className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  title="Move to NO"
+                  aria-label="Move to NO"
+                  className="p-1.5 rounded-md bg-rose-100 text-rose-700 hover:bg-rose-200 dark:bg-rose-900/30 dark:text-rose-200 dark:hover:bg-rose-900/50 transition"
+                  onClick={() => onAssign && onAssign(player.id, 'no')}
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </div>
               <button type="button" onClick={() => onEdit(player)} title="Edit" aria-label="Edit" className="text-xs p-1 rounded-md bg-brand-50 text-brand-700 dark:bg-brand-900/50 dark:text-brand-200 hover:bg-brand-100 dark:hover:bg-brand-900 transition">
                 <PencilSquareIcon className="w-4 h-4" />
               </button>
@@ -188,7 +253,7 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable }) {
   );
 }
 
-function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove }) {
+function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onAssign }) {
   const titleColor =
     droppableId === 'yes' ? 'text-emerald-700 dark:text-emerald-300' :
     droppableId === 'maybe' ? 'text-amber-700 dark:text-amber-300' :
@@ -208,7 +273,7 @@ function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove }) {
         {(provided) => (
           <div ref={provided.innerRef} {...provided.droppableProps} className="min-h-[56vh] pt-1">
             {itemIds.map((id, index) => (
-              <PlayerCard key={id} id={id} index={index} player={playersMap[id]} onEdit={onEdit} onRemove={onRemove} isInAvailable={false} />
+              <PlayerCard key={id} id={id} index={index} player={playersMap[id]} onEdit={onEdit} onRemove={onRemove} onAssign={onAssign} isInAvailable={false} />
             ))}
             {provided.placeholder}
           </div>
@@ -266,6 +331,8 @@ export default function App() {
   const [editingPlayer, setEditingPlayer] = useState(null);
   const boardRef = useRef(null);
   const searchRef = useRef(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportMenuRef = useRef(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -295,6 +362,24 @@ export default function App() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [undo]);
+
+  useEffect(() => {
+    function onDocumentMouseDown(e) {
+      if (!showExportMenu) return;
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target)) {
+        setShowExportMenu(false);
+      }
+    }
+    function onWindowKeyDown(e) {
+      if (e.key === 'Escape') setShowExportMenu(false);
+    }
+    document.addEventListener('mousedown', onDocumentMouseDown);
+    window.addEventListener('keydown', onWindowKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onDocumentMouseDown);
+      window.removeEventListener('keydown', onWindowKeyDown);
+    };
+  }, [showExportMenu]);
 
   function snapshotAnd(fn) {
     setLastSnapshot(JSON.parse(JSON.stringify(state)));
@@ -345,6 +430,21 @@ export default function App() {
       next.buckets.maybe = next.buckets.maybe.filter(x => x !== id);
       next.buckets.no = next.buckets.no.filter(x => x !== id);
       if (!next.availableOrder.includes(id)) next.availableOrder.unshift(id);
+      return next;
+    }));
+  }
+
+  function assignToBucket(id, bucket) {
+    if (!['yes', 'maybe', 'no'].includes(bucket)) return;
+    snapshotAnd(() => setState(prev => {
+      const next = JSON.parse(JSON.stringify(prev));
+      // Remove from all lists
+      next.availableOrder = next.availableOrder.filter(x => x !== id);
+      next.buckets.yes = next.buckets.yes.filter(x => x !== id);
+      next.buckets.maybe = next.buckets.maybe.filter(x => x !== id);
+      next.buckets.no = next.buckets.no.filter(x => x !== id);
+      // Add to target bucket at the top
+      next.buckets[bucket].unshift(id);
       return next;
     }));
   }
@@ -550,7 +650,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-slate-900 dark:text-slate-100 transition-colors">
-      <div className="max-w-7xl mx-auto p-4 space-y-4">
+      <div className="w-full md:w-[80vw] mx-auto p-4 space-y-4">
         {/* Top brand/header bar */}
         <div className="relative overflow-hidden rounded-2xl p-[1px] bg-gradient-to-r from-brand-500 via-accent-400 to-emerald-400 animated-gradient-border">
           <div className="rounded-2xl bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-3 flex items-center justify-between ring-1 ring-slate-200/60 dark:ring-white/10">
@@ -580,15 +680,53 @@ export default function App() {
               <input ref={searchRef} className="w-full max-w-md px-3 py-2 rounded-full border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-800/70 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" placeholder="Search across lists" value={query} onChange={e => setQuery(e.target.value)} />
             </div>
             {/* Right: Exports + Undo + Clear */}
-            <div className="ml-auto flex items-center gap-2">
-              <div className="border-l border-slate-200/60 dark:border-white/10 pl-2 flex gap-2">
+            <div className="md:ml-auto flex items-center gap-2 flex-wrap relative">
+              {/* Mobile: Export dropdown */}
+              <div ref={exportMenuRef} className="relative md:hidden">
+                <button
+                  className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm"
+                  onClick={() => setShowExportMenu(v => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={showExportMenu ? 'true' : 'false'}
+                  title="Export"
+                  aria-label="Export"
+                >
+                  <ArrowDownTrayIcon className="w-5 h-5" />
+                  <span>Export</span>
+                </button>
+                {showExportMenu && (
+                  <div role="menu" className="absolute z-40 mt-2 w-40 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowExportMenu(false); exportCSV(); }}>CSV</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowExportMenu(false); exportPNG(); }}>PNG</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowExportMenu(false); exportPDF(); }}>PDF</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowExportMenu(false); exportJSON(); }}>JSON</button>
+                  </div>
+                )}
+              </div>
+              {/* Desktop: Export buttons */}
+              <div className="hidden md:flex items-center gap-2 border-l border-slate-200/60 dark:border-white/10 pl-2">
                 <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportCSV} title="Export CSV" aria-label="Export CSV"><ArrowDownTrayIcon className="w-5 h-5" /><span>CSV</span></button>
                 <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportPNG} title="Export PNG" aria-label="Export PNG"><ArrowDownTrayIcon className="w-5 h-5" /><span>PNG</span></button>
                 <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportPDF} title="Export PDF" aria-label="Export PDF"><ArrowDownTrayIcon className="w-5 h-5" /><span>PDF</span></button>
                 <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportJSON} title="Export JSON" aria-label="Export JSON"><ArrowDownTrayIcon className="w-5 h-5" /><span>JSON</span></button>
               </div>
-              <button onClick={undo} disabled={!lastSnapshot} className={`px-3 py-2 rounded-full shadow-sm transition ${lastSnapshot ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'}`}>Undo</button>
-              <button onClick={clearAll} className="px-3 py-2 rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm transition">Clear Draft</button>
+              <button
+                onClick={undo}
+                disabled={!lastSnapshot}
+                title="Undo"
+                aria-label="Undo"
+                className={`${lastSnapshot ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'} px-3 py-2 rounded-full shadow-sm transition inline-flex items-center justify-center`}
+              >
+                <ArrowUturnLeftIcon className="w-5 h-5" />
+              </button>
+              <button
+                onClick={clearAll}
+                title="Clear Draft"
+                aria-label="Clear Draft"
+                className="px-3 py-2 rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm transition text-sm"
+              >
+                Clear
+              </button>
             </div>
           </div>
         </header>
@@ -607,7 +745,7 @@ export default function App() {
                       {(provided) => (
                         <div ref={provided.innerRef} {...provided.droppableProps} className="min-h-[56vh]">
                           {filtered.availableOrder.map((id, index) => (
-                            <PlayerCard key={id} id={id} index={index} player={filtered.players[id]} onEdit={handleEdit} onRemove={handleRemove} isInAvailable />
+                            <PlayerCard key={id} id={id} index={index} player={filtered.players[id]} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} isInAvailable />
                           ))}
                           {provided.placeholder}
                         </div>
@@ -617,9 +755,9 @@ export default function App() {
                 </div>
 
                 <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Column droppableId="yes" title="YES" itemIds={filtered.buckets.yes} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} />
-                  <Column droppableId="maybe" title="MAYBE" itemIds={filtered.buckets.maybe} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} />
-                  <Column droppableId="no" title="NO" itemIds={filtered.buckets.no} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} />
+                  <Column droppableId="yes" title="YES" itemIds={filtered.buckets.yes} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} />
+                  <Column droppableId="maybe" title="MAYBE" itemIds={filtered.buckets.maybe} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} />
+                  <Column droppableId="no" title="NO" itemIds={filtered.buckets.no} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} />
                 </div>
               </div>
             </DragDropContext>
