@@ -6,19 +6,26 @@ html, body, #root { min-height: 100%; height: auto; }
 #root { min-height: 100vh; }
 
 :root {
-  --bg1: #0e1220; /* deep navy */
-  --bg2: #0a0d16; /* darker base */
+  /* Light theme by default */
+  --bg1: #f7f9fc; /* light backdrop */
+  --bg2: #ffffff; /* page base */
   --accent-start: #00A7FF;
   --accent-end: #7C4DFF;
 }
 
+/* Dark theme overrides */
+.dark {
+  --bg1: #0e1220; /* deep navy */
+  --bg2: #0a0d16; /* darker base */
+}
+
 @layer base {
   html { font-family: theme('fontFamily.sans'); }
-  /* Layered gradient background with very subtle accents */
+  /* Layered gradient background with subtle accents */
   body {
     background:
-      radial-gradient(900px 600px at 10% 5%, color-mix(in oklab, var(--accent-end) 20%, transparent), transparent 50%),
-      radial-gradient(800px 600px at 85% 10%, color-mix(in oklab, var(--accent-start) 18%, transparent), transparent 52%),
+      radial-gradient(900px 600px at 10% 5%, color-mix(in oklab, var(--accent-end) 12%, transparent), transparent 50%),
+      radial-gradient(800px 600px at 85% 10%, color-mix(in oklab, var(--accent-start) 10%, transparent), transparent 52%),
       linear-gradient(180deg, var(--bg1), var(--bg2));
     background-attachment: fixed;
     background-size: 160% 160%, 160% 160%, 100% 100%;

@@ -181,7 +181,7 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
             initial={false}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
-            className={`select-none cursor-grab active:cursor-grabbing bg-white/5 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-sm hover:shadow-md ring-1 ring-white/10 px-3 py-2.5 md:py-2 mb-2 md:mb-2.5 flex justify-between items-start transition duration-300 ease-out hover:-translate-y-0.5 ${activeClass}`}
+            className={`select-none cursor-grab active:cursor-grabbing bg-white/80 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 backdrop-blur-md rounded-xl shadow-sm hover:shadow-md px-3 py-2.5 md:py-2 mb-2 md:mb-2.5 flex justify-between items-start transition duration-300 ease-out hover:-translate-y-0.5 ${activeClass}`}
           >
             <div className="flex-1 min-w-0 pr-2">
               <div ref={nameContainerRef} className="relative">
@@ -208,7 +208,7 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
                   type="button"
                   title="Move to YES"
                   aria-label="Move to YES"
-                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-emerald-400/15 text-emerald-300 hover:bg-emerald-400/25 transition focus-ring"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition focus-ring dark:bg-emerald-400/15 dark:text-emerald-300 dark:hover:bg-emerald-400/25"
                   onClick={() => onAssign && onAssign(player.id, 'yes')}
                 >
                   <CheckIcon className="w-4 h-4" />
@@ -217,7 +217,7 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
                   type="button"
                   title="Move to MAYBE"
                   aria-label="Move to MAYBE"
-                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-amber-400/15 text-amber-300 hover:bg-amber-400/25 transition focus-ring"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition focus-ring dark:bg-amber-400/15 dark:text-amber-300 dark:hover:bg-amber-400/25"
                   onClick={() => onAssign && onAssign(player.id, 'maybe')}
                 >
                   <QuestionMarkCircleIcon className="w-4 h-4" />
@@ -226,13 +226,13 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
                   type="button"
                   title="Move to NO"
                   aria-label="Move to NO"
-                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-rose-400/15 text-rose-300 hover:bg-rose-400/25 transition focus-ring"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-rose-100 text-rose-700 hover:bg-rose-200 transition focus-ring dark:bg-rose-400/15 dark:text-rose-300 dark:hover:bg-rose-400/25"
                   onClick={() => onAssign && onAssign(player.id, 'no')}
                 >
                   <XMarkIcon className="w-4 h-4" />
                 </button>
               </div>
-              <button type="button" onClick={() => onEdit(player)} title="Edit" aria-label="Edit" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-white/10 text-slate-300 hover:bg-white/20 transition focus-ring">
+              <button type="button" onClick={() => onEdit(player)} title="Edit" aria-label="Edit" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition focus-ring dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">
                 <PencilSquareIcon className="w-4 h-4" />
               </button>
               {isInAvailable ? (
@@ -240,7 +240,7 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
                   <TrashIcon className="w-4 h-4" />
                 </button>
               ) : (
-                <button type="button" onClick={() => onRemove(player.id)} title="Send to Available" aria-label="Send to Available" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-white/10 text-slate-300 hover:bg-white/20 transition focus-ring">
+                <button type="button" onClick={() => onRemove(player.id)} title="Send to Available" aria-label="Send to Available" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition focus-ring dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">
                   <ArrowUturnLeftIcon className="w-4 h-4" />
                 </button>
               )}
@@ -253,15 +253,15 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
   );
 }
 
-function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onAssign, getHighlightClass }) {
+function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onAssign, getHighlightClass, onTitleChange }) {
   const titleColor =
-    droppableId === 'yes' ? 'text-emerald-300' :
-    droppableId === 'maybe' ? 'text-amber-300' :
-    droppableId === 'no' ? 'text-rose-300' : 'text-slate-200';
+    droppableId === 'yes' ? 'text-emerald-700 dark:text-emerald-300' :
+    droppableId === 'maybe' ? 'text-amber-700 dark:text-amber-300' :
+    droppableId === 'no' ? 'text-rose-700 dark:text-rose-300' : 'text-slate-800 dark:text-slate-200';
   const badgeBg =
-    droppableId === 'yes' ? 'bg-white/10 text-emerald-300' :
-    droppableId === 'maybe' ? 'bg-white/10 text-amber-300' :
-    droppableId === 'no' ? 'bg-white/10 text-rose-300' : 'bg-white/10 text-slate-200';
+    droppableId === 'yes' ? 'bg-emerald-100 text-emerald-700 dark:bg-white/10 dark:text-emerald-300' :
+    droppableId === 'maybe' ? 'bg-amber-100 text-amber-700 dark:bg-white/10 dark:text-amber-300' :
+    droppableId === 'no' ? 'bg-rose-100 text-rose-700 dark:bg-white/10 dark:text-rose-300' : 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-200';
   const colorHex =
     droppableId === 'yes' ? '#10B981' :
     droppableId === 'maybe' ? '#F59E0B' :
@@ -272,16 +272,37 @@ function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onA
     droppableId === 'maybe' ? 'ring-amber-500/50' :
     droppableId === 'no' ? 'ring-rose-500/50' : 'ring-[#888888]';
 
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [draftTitle, setDraftTitle] = React.useState(title);
+  React.useEffect(() => { setDraftTitle(title); }, [title]);
+  function commit() { setIsEditing(false); if (draftTitle !== title) onTitleChange?.(droppableId, draftTitle); }
+
   return (
-    <div className={`h-full flex flex-col min-w-[260px] backdrop-blur-md rounded-2xl p-4 ring-1 ${ringClass} shadow-sm hover:shadow-md transition`}
+    <div className={`min-w-[260px] backdrop-blur-md rounded-2xl p-4 ring-1 ${ringClass} shadow-sm hover:shadow-md transition`}
          style={{ backgroundImage: containerGradient }}>
       <div className="flex justify-between items-center mb-3">
-        <h3 className={`text-base md:text-lg font-extrabold tracking-wide ${titleColor}`}>{title}</h3>
+        <div className="flex items-center gap-2">
+          {isEditing ? (
+            <input
+              className={`text-base md:text-lg font-extrabold tracking-wide bg-transparent border-b border-slate-300/60 dark:border-white/20 focus:outline-none ${titleColor}`}
+              value={draftTitle}
+              onChange={e => setDraftTitle(e.target.value)}
+              onBlur={commit}
+              onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setIsEditing(false); setDraftTitle(title); } }}
+              autoFocus
+            />
+          ) : (
+            <h3 className={`text-base md:text-lg font-extrabold tracking-wide ${titleColor}`}>{title}</h3>
+          )}
+          <button type="button" className="p-1 rounded-md text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-white/10" title="Edit title" aria-label="Edit title" onClick={() => setIsEditing(v => !v)}>
+            <PencilSquareIcon className="w-4 h-4" />
+          </button>
+        </div>
         <div className={`text-xs px-2 py-0.5 rounded-full ${badgeBg}`}>{itemIds.length}</div>
       </div>
       <Droppable droppableId={droppableId} direction="vertical" type="PLAYER">
         {(provided, snapshot) => (
-          <div ref={provided.innerRef} {...provided.droppableProps} className={`flex-1 min-h-[200px] pt-1 rounded-xl transition ring-offset-1 ${getHighlightClass(droppableId, snapshot.isDraggingOver)}`}>
+          <div ref={provided.innerRef} {...provided.droppableProps} className={`min-h-[200px] rounded-xl transition ring-offset-1 ${getHighlightClass(droppableId, snapshot.isDraggingOver)}`}>
             {itemIds.map((id, index) => (
               <PlayerCard key={id} id={id} index={index} player={playersMap[id]} onEdit={onEdit} onRemove={onRemove} onAssign={onAssign} isInAvailable={false} />
             ))}
@@ -327,11 +348,22 @@ function defaultState() {
     players,
     availableOrder,
     buckets: { yes: [], maybe: [], no: [] },
+    titles: { available: 'Available', yes: 'YES', maybe: 'MAYBE', no: 'NO' },
   };
 }
 
+function normalizeState(s) {
+  const next = JSON.parse(JSON.stringify(s));
+  if (!next.titles) next.titles = { available: 'Available', yes: 'YES', maybe: 'MAYBE', no: 'NO' };
+  if (!next.titles.available) next.titles.available = 'Available';
+  if (!next.titles.yes) next.titles.yes = 'YES';
+  if (!next.titles.maybe) next.titles.maybe = 'MAYBE';
+  if (!next.titles.no) next.titles.no = 'NO';
+  return next;
+}
+
 export default function App() {
-  const [state, setState] = useState(() => loadFromStorage() || defaultState());
+  const [state, setState] = useState(() => normalizeState(loadFromStorage() || defaultState()));
   const [lastSnapshot, setLastSnapshot] = useState(null);
   const [query, setQuery] = useState('');
   const [dark, setDark] = useState(() => {
@@ -352,6 +384,15 @@ export default function App() {
   const draggingRef = useRef(false);
   function announce(msg) {
     if (liveRef.current) liveRef.current.textContent = msg;
+  }
+  const [isEditingAvailable, setIsEditingAvailable] = useState(false);
+  const [draftAvailableTitle, setDraftAvailableTitle] = useState('Available');
+  useEffect(() => { setDraftAvailableTitle(state.titles.available || 'Available'); }, [state.titles?.available]);
+  function commitAvailable() {
+    setIsEditingAvailable(false);
+    if ((draftAvailableTitle || '').trim() !== (state.titles.available || 'Available')) {
+      updateTitle('available', draftAvailableTitle);
+    }
   }
 
   useEffect(() => {
@@ -410,7 +451,7 @@ export default function App() {
     if (!confirm('Clear all players and draft lists? This cannot be undone.')) return;
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
     setLastSnapshot(null);
-    setState({ players: {}, availableOrder: [], buckets: { yes: [], maybe: [], no: [] } });
+    setState({ players: {}, availableOrder: [], buckets: { yes: [], maybe: [], no: [] }, titles: { available: 'Available', yes: 'YES', maybe: 'MAYBE', no: 'NO' } });
   }
 
   function addPlayer(name, notes = '') {
@@ -585,7 +626,7 @@ export default function App() {
       if (!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON');
       if (!parsed.players || !parsed.availableOrder || !parsed.buckets) throw new Error('Missing keys');
       if (!parsed.buckets.yes || !parsed.buckets.maybe || !parsed.buckets.no) throw new Error('Missing bucket lists');
-      snapshotAnd(() => setState(parsed));
+      snapshotAnd(() => setState(normalizeState(parsed)));
     } catch (e) {
       alert('Invalid JSON format for board.');
       console.error('Import JSON error', e);
@@ -714,6 +755,15 @@ export default function App() {
     if (p) announce(`${p.name} moved to ${toList} position ${destination.index + 1}`);
   }
 
+  function updateTitle(listId, value) {
+    const newTitle = (value || '').trim() || (listId === 'available' ? 'Available' : listId.toUpperCase());
+    snapshotAnd(() => setState(prev => {
+      const next = JSON.parse(JSON.stringify(prev));
+      next.titles[listId] = newTitle;
+      return next;
+    }));
+  }
+
   return (
     <div className="min-h-screen text-slate-900 dark:text-slate-100 transition-colors">
       <div className="w-full md:w-[80vw] mx-auto p-4 space-y-4">
@@ -768,7 +818,7 @@ export default function App() {
               {/* Mobile: Export dropdown */}
               <div ref={exportMenuRef} className="relative md:hidden">
                 <button
-                  className="px-3 py-2 rounded-full bg-white/10 text-slate-200 hover:bg-white/20 ring-1 ring-white/10 transition inline-flex items-center gap-2 text-sm focus-ring"
+                  className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20"
                   onClick={() => setShowExportMenu(v => !v)}
                   aria-haspopup="menu"
                   aria-expanded={showExportMenu ? 'true' : 'false'}
@@ -789,10 +839,10 @@ export default function App() {
               </div>
               {/* Desktop: Export buttons */}
               <div className="hidden md:flex items-center gap-2">
-                <button className="px-3 py-2 rounded-full bg-white/10 text-slate-200 hover:bg-white/20 ring-1 ring-white/10 transition inline-flex items-center gap-2 text-sm focus-ring" onClick={exportCSV} title="Export CSV" aria-label="Export CSV"><ArrowDownTrayIcon className="w-5 h-5" /><span>CSV</span></button>
-                <button className="px-3 py-2 rounded-full bg-white/10 text-slate-200 hover:bg-white/20 ring-1 ring-white/10 transition inline-flex items-center gap-2 text-sm focus-ring" onClick={exportPNG} title="Export PNG" aria-label="Export PNG"><ArrowDownTrayIcon className="w-5 h-5" /><span>PNG</span></button>
-                <button className="px-3 py-2 rounded-full bg-white/10 text-slate-200 hover:bg-white/20 ring-1 ring-white/10 transition inline-flex items-center gap-2 text-sm focus-ring" onClick={exportPDF} title="Export PDF" aria-label="Export PDF"><ArrowDownTrayIcon className="w-5 h-5" /><span>PDF</span></button>
-                <button className="px-3 py-2 rounded-full bg-white/10 text-slate-200 hover:bg-white/20 ring-1 ring-white/10 transition inline-flex items-center gap-2 text-sm focus-ring" onClick={exportJSON} title="Export JSON" aria-label="Export JSON"><ArrowDownTrayIcon className="w-5 h-5" /><span>JSON</span></button>
+                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportCSV} title="Export CSV" aria-label="Export CSV"><ArrowDownTrayIcon className="w-5 h-5" /><span>CSV</span></button>
+                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportPNG} title="Export PNG" aria-label="Export PNG"><ArrowDownTrayIcon className="w-5 h-5" /><span>PNG</span></button>
+                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportPDF} title="Export PDF" aria-label="Export PDF"><ArrowDownTrayIcon className="w-5 h-5" /><span>PDF</span></button>
+                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportJSON} title="Export JSON" aria-label="Export JSON"><ArrowDownTrayIcon className="w-5 h-5" /><span>JSON</span></button>
               </div>
               <button onClick={undo} disabled={!lastSnapshot} className={`${lastSnapshot ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'} px-3 py-2 rounded-full shadow-sm transition inline-flex items-center justify-center focus-ring`} title="Undo" aria-label="Undo">
                 <ArrowUturnLeftIcon className="w-5 h-5" />
@@ -805,18 +855,34 @@ export default function App() {
         <main className="flex gap-4">
           <div className="flex-1">
             <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-              <div ref={boardRef} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-stretch">
+              <div ref={boardRef} className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Available */}
-                <div className="h-full">
-                  <div className="h-full flex flex-col backdrop-blur-md rounded-2xl p-4 ring-1 ring-[#888888] shadow-sm hover:shadow-md transition"
+                <div>
+                  <div className="backdrop-blur-md rounded-2xl p-4 ring-1 ring-[#888888] shadow-sm hover:shadow-md transition"
                        style={{ backgroundImage: 'linear-gradient(135deg, #FFFFFF26 0%, #FFFFFF00 50%, #FFFFFF00 100%)' }}>
                     <div className="flex justify-between items-center mb-3">
-                      <h3 className="text-base md:text-lg font-extrabold tracking-wide text-slate-200">AVAILABLE</h3>
-                      <div className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-slate-200">{filtered.availableOrder.length}</div>
+                      <div className="flex items-center gap-2">
+                        {isEditingAvailable ? (
+                          <input
+                            className="text-base md:text-lg font-extrabold tracking-wide bg-transparent border-b border-slate-300/60 dark:border-white/20 focus:outline-none text-slate-800 dark:text-slate-200"
+                            value={draftAvailableTitle}
+                            onChange={e => setDraftAvailableTitle(e.target.value)}
+                            onBlur={commitAvailable}
+                            onKeyDown={e => { if (e.key === 'Enter') commitAvailable(); if (e.key === 'Escape') { setIsEditingAvailable(false); setDraftAvailableTitle(state.titles.available || 'Available'); } }}
+                            autoFocus
+                          />
+                        ) : (
+                          <h3 className="text-base md:text-lg font-extrabold tracking-wide text-slate-800 dark:text-slate-200">{state.titles.available}</h3>
+                        )}
+                        <button type="button" className="p-1 rounded-md text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-white/10" title="Edit title" aria-label="Edit title" onClick={() => setIsEditingAvailable(v => !v)}>
+                          <PencilSquareIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-200">{filtered.availableOrder.length}</div>
                     </div>
                     <Droppable droppableId="available" direction="vertical" type="PLAYER">
                       {(provided, snapshot) => (
-                        <div ref={provided.innerRef} {...provided.droppableProps} className={`flex-1 min-h-[200px] rounded-xl transition ring-offset-1 ${getHighlightClass('available', snapshot.isDraggingOver)}`}>
+                        <div ref={provided.innerRef} {...provided.droppableProps} className={`min-h-[200px] rounded-xl transition ring-offset-1 ${getHighlightClass('available', snapshot.isDraggingOver)}`}>
                           {filtered.availableOrder.map((id, index) => (
                             <PlayerCard key={id} id={id} index={index} player={filtered.players[id]} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} isInAvailable />
                           ))}
@@ -828,16 +894,16 @@ export default function App() {
                 </div>
 
                 {/* YES */}
-                <div className="h-full">
-                  <Column droppableId="yes" title="YES" itemIds={filtered.buckets.yes} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} />
+                <div>
+                  <Column droppableId="yes" title={state.titles.yes} itemIds={filtered.buckets.yes} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={updateTitle} />
                 </div>
                 {/* MAYBE */}
-                <div className="h-full">
-                  <Column droppableId="maybe" title="MAYBE" itemIds={filtered.buckets.maybe} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} />
+                <div>
+                  <Column droppableId="maybe" title={state.titles.maybe} itemIds={filtered.buckets.maybe} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={updateTitle} />
                 </div>
                 {/* NO */}
-                <div className="h-full">
-                  <Column droppableId="no" title="NO" itemIds={filtered.buckets.no} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} />
+                <div>
+                  <Column droppableId="no" title={state.titles.no} itemIds={filtered.buckets.no} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={updateTitle} />
                 </div>
               </div>
             </DragDropContext>
