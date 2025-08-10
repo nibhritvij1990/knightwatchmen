@@ -5,9 +5,28 @@
 html, body, #root { min-height: 100%; height: auto; }
 #root { min-height: 100vh; }
 
+:root {
+  --bg1: #0e1220; /* deep navy */
+  --bg2: #0a0d16; /* darker base */
+  --accent-start: #00A7FF;
+  --accent-end: #7C4DFF;
+}
+
 @layer base {
   html { font-family: theme('fontFamily.sans'); }
-  body { @apply bg-gradient-to-br from-brand-50 via-white to-accent-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900; }
+  /* Layered gradient background with very subtle accents */
+  body {
+    background:
+      radial-gradient(900px 600px at 10% 5%, color-mix(in oklab, var(--accent-end) 20%, transparent), transparent 50%),
+      radial-gradient(800px 600px at 85% 10%, color-mix(in oklab, var(--accent-start) 18%, transparent), transparent 52%),
+      linear-gradient(180deg, var(--bg1), var(--bg2));
+    background-attachment: fixed;
+    background-size: 160% 160%, 160% 160%, 100% 100%;
+    animation: page-pan 22s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body { animation: none; }
+  }
   body { overflow-y: auto; overflow-x: hidden; }
 }
 
@@ -25,4 +44,20 @@ html, body, #root { min-height: 100%; height: auto; }
 .animated-gradient-border {
   background-size: 300% 300%;
   animation: gradient-shift 12s ease infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animated-gradient-border { animation: none; }
+}
+
+/* Page background slow pan */
+@keyframes page-pan {
+  0% { background-position: 0% 0%, 100% 0%, 0% 0%; }
+  50% { background-position: 100% 0%, 0% 0%, 0% 0%; }
+  100% { background-position: 0% 0%, 100% 0%, 0% 0%; }
+}
+
+/* Reusable accessible focus ring */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-start) 40%, transparent);
 }

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { createPortal } from 'react-dom';
-import { ArrowDownTrayIcon, ArrowUpTrayIcon, PencilSquareIcon, TrashIcon, ArrowUturnLeftIcon, ArrowLeftIcon, SunIcon, MoonIcon, PlusIcon, CheckIcon, QuestionMarkCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { ArrowDownTrayIcon, ArrowUpTrayIcon, PencilSquareIcon, TrashIcon, ArrowUturnLeftIcon, ArrowLeftIcon, HomeIcon, SunIcon, MoonIcon, PlusIcon, CheckIcon, QuestionMarkCircleIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 
 function ModalShell({ open, title, children, onClose }) {
   if (!open) return null;
@@ -181,7 +181,7 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
             initial={false}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
-            className={`select-none cursor-grab active:cursor-grabbing bg-white/90 dark:bg-slate-800/80 rounded-xl shadow-sm ring-1 ring-slate-200/60 dark:ring-white/10 p-3 mb-3 flex justify-between items-start transition duration-200 ${activeClass}`}
+            className={`select-none cursor-grab active:cursor-grabbing bg-white/5 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-sm hover:shadow-md ring-1 ring-white/10 px-3 py-2.5 md:py-2 mb-2 md:mb-2.5 flex justify-between items-start transition duration-300 ease-out hover:-translate-y-0.5 ${activeClass}`}
           >
             <div className="flex-1 min-w-0 pr-2">
               <div ref={nameContainerRef} className="relative">
@@ -208,7 +208,7 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
                   type="button"
                   title="Move to YES"
                   aria-label="Move to YES"
-                  className="p-1.5 rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:hover:bg-emerald-900/50 transition"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-emerald-400/15 text-emerald-300 hover:bg-emerald-400/25 transition focus-ring"
                   onClick={() => onAssign && onAssign(player.id, 'yes')}
                 >
                   <CheckIcon className="w-4 h-4" />
@@ -217,7 +217,7 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
                   type="button"
                   title="Move to MAYBE"
                   aria-label="Move to MAYBE"
-                  className="p-1.5 rounded-md bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/50 transition"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-amber-400/15 text-amber-300 hover:bg-amber-400/25 transition focus-ring"
                   onClick={() => onAssign && onAssign(player.id, 'maybe')}
                 >
                   <QuestionMarkCircleIcon className="w-4 h-4" />
@@ -226,21 +226,21 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
                   type="button"
                   title="Move to NO"
                   aria-label="Move to NO"
-                  className="p-1.5 rounded-md bg-rose-100 text-rose-700 hover:bg-rose-200 dark:bg-rose-900/30 dark:text-rose-200 dark:hover:bg-rose-900/50 transition"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-rose-400/15 text-rose-300 hover:bg-rose-400/25 transition focus-ring"
                   onClick={() => onAssign && onAssign(player.id, 'no')}
                 >
                   <XMarkIcon className="w-4 h-4" />
                 </button>
               </div>
-              <button type="button" onClick={() => onEdit(player)} title="Edit" aria-label="Edit" className="text-xs p-1 rounded-md bg-brand-50 text-brand-700 dark:bg-brand-900/50 dark:text-brand-200 hover:bg-brand-100 dark:hover:bg-brand-900 transition">
+              <button type="button" onClick={() => onEdit(player)} title="Edit" aria-label="Edit" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-white/10 text-slate-300 hover:bg-white/20 transition focus-ring">
                 <PencilSquareIcon className="w-4 h-4" />
               </button>
               {isInAvailable ? (
-                <button type="button" onClick={() => onRemove(player.id)} title="Delete player" aria-label="Delete player" className="text-xs p-1 rounded-md bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 transition">
+                <button type="button" onClick={() => onRemove(player.id)} title="Delete player" aria-label="Delete player" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 transition focus-ring">
                   <TrashIcon className="w-4 h-4" />
                 </button>
               ) : (
-                <button type="button" onClick={() => onRemove(player.id)} title="Send to Available" aria-label="Send to Available" className="text-xs p-1 rounded-md bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+                <button type="button" onClick={() => onRemove(player.id)} title="Send to Available" aria-label="Send to Available" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-white/10 text-slate-300 hover:bg-white/20 transition focus-ring">
                   <ArrowUturnLeftIcon className="w-4 h-4" />
                 </button>
               )}
@@ -253,25 +253,35 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
   );
 }
 
-function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onAssign }) {
+function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onAssign, getHighlightClass }) {
   const titleColor =
-    droppableId === 'yes' ? 'text-emerald-700 dark:text-emerald-300' :
-    droppableId === 'maybe' ? 'text-amber-700 dark:text-amber-300' :
-    droppableId === 'no' ? 'text-rose-700 dark:text-rose-300' : 'text-slate-700 dark:text-slate-200';
+    droppableId === 'yes' ? 'text-emerald-300' :
+    droppableId === 'maybe' ? 'text-amber-300' :
+    droppableId === 'no' ? 'text-rose-300' : 'text-slate-200';
   const badgeBg =
-    droppableId === 'yes' ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-200' :
-    droppableId === 'maybe' ? 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-200' :
-    droppableId === 'no' ? 'bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-200' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+    droppableId === 'yes' ? 'bg-white/10 text-emerald-300' :
+    droppableId === 'maybe' ? 'bg-white/10 text-amber-300' :
+    droppableId === 'no' ? 'bg-white/10 text-rose-300' : 'bg-white/10 text-slate-200';
+  const colorHex =
+    droppableId === 'yes' ? '#10B981' :
+    droppableId === 'maybe' ? '#F59E0B' :
+    droppableId === 'no' ? '#EF4444' : '#FFFFFF';
+  const containerGradient = `linear-gradient(135deg, ${colorHex}26 0%, ${colorHex}00 50%, ${colorHex}00 100%)`;
+  const ringClass =
+    droppableId === 'yes' ? 'ring-emerald-500/50' :
+    droppableId === 'maybe' ? 'ring-amber-500/50' :
+    droppableId === 'no' ? 'ring-rose-500/50' : 'ring-[#888888]';
 
   return (
-    <div className="flex-1 min-w-[260px] min-h-[56vh] bg-white/70 dark:bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-sm">
+    <div className={`h-full flex flex-col min-w-[260px] backdrop-blur-md rounded-2xl p-4 ring-1 ${ringClass} shadow-sm hover:shadow-md transition`}
+         style={{ backgroundImage: containerGradient }}>
       <div className="flex justify-between items-center mb-3">
-        <h3 className={`text-sm font-semibold ${titleColor}`}>{title}</h3>
+        <h3 className={`text-base md:text-lg font-extrabold tracking-wide ${titleColor}`}>{title}</h3>
         <div className={`text-xs px-2 py-0.5 rounded-full ${badgeBg}`}>{itemIds.length}</div>
       </div>
       <Droppable droppableId={droppableId} direction="vertical" type="PLAYER">
-        {(provided) => (
-          <div ref={provided.innerRef} {...provided.droppableProps} className="min-h-[56vh] pt-1">
+        {(provided, snapshot) => (
+          <div ref={provided.innerRef} {...provided.droppableProps} className={`flex-1 min-h-[200px] pt-1 rounded-xl transition ring-offset-1 ${getHighlightClass(droppableId, snapshot.isDraggingOver)}`}>
             {itemIds.map((id, index) => (
               <PlayerCard key={id} id={id} index={index} player={playersMap[id]} onEdit={onEdit} onRemove={onRemove} onAssign={onAssign} isInAvailable={false} />
             ))}
@@ -324,7 +334,12 @@ export default function App() {
   const [state, setState] = useState(() => loadFromStorage() || defaultState());
   const [lastSnapshot, setLastSnapshot] = useState(null);
   const [query, setQuery] = useState('');
-  const [dark, setDark] = useState(() => localStorage.getItem('squad_dark') === '1');
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('squad_dark');
+    if (saved === '1') return true;
+    if (saved === '0') return false;
+    return true; // default to dark when no saved preference
+  });
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showImportJSON, setShowImportJSON] = useState(false);
@@ -333,6 +348,11 @@ export default function App() {
   const searchRef = useRef(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const exportMenuRef = useRef(null);
+  const liveRef = useRef(null);
+  const draggingRef = useRef(false);
+  function announce(msg) {
+    if (liveRef.current) liveRef.current.textContent = msg;
+  }
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -432,6 +452,8 @@ export default function App() {
       if (!next.availableOrder.includes(id)) next.availableOrder.unshift(id);
       return next;
     }));
+    const p = state.players[id];
+    if (p) announce(`${p.name} moved to Available`);
   }
 
   function assignToBucket(id, bucket) {
@@ -447,6 +469,8 @@ export default function App() {
       next.buckets[bucket].unshift(id);
       return next;
     }));
+    const p = state.players[id];
+    if (p) announce(`${p.name} moved to ${bucket.toUpperCase()}`);
   }
 
   function undo() {
@@ -568,6 +592,44 @@ export default function App() {
     }
   }
 
+  function moveItemToEdge(id, edge) {
+    const isStart = edge === 'start';
+    snapshotAnd(() => setState(prev => {
+      const next = JSON.parse(JSON.stringify(prev));
+      const lists = [
+        ['available', next.availableOrder],
+        ['yes', next.buckets.yes],
+        ['maybe', next.buckets.maybe],
+        ['no', next.buckets.no],
+      ];
+      for (const [listName, arr] of lists) {
+        const idx = arr.indexOf(id);
+        if (idx !== -1) {
+          arr.splice(idx, 1);
+          if (isStart) arr.unshift(id); else arr.push(id);
+          announce(`${next.players[id]?.name || 'Player'} moved to ${isStart ? 'start' : 'end'} of ${listName}`);
+          break;
+        }
+      }
+      return next;
+    }));
+  }
+
+  function getHighlightClass(droppableId, isDraggingOver) {
+    if (!isDraggingOver) return '';
+    return droppableId === 'yes' ? 'ring-2 ring-emerald-400/40' :
+           droppableId === 'maybe' ? 'ring-2 ring-amber-400/40' :
+           droppableId === 'no' ? 'ring-2 ring-rose-400/40' : 'ring-2 ring-slate-300/40';
+  }
+
+  function onDragStart(start) {
+    draggingRef.current = true;
+    const p = state.players[start.draggableId];
+    if (p) announce(`Picked up ${p.name}`);
+  }
+
+  function onDragUpdate() {}
+
   const filtered = useMemo(() => {
     if (!query) return state;
     const q = query.toLowerCase();
@@ -646,28 +708,40 @@ export default function App() {
 
       return next;
     }));
+
+    draggingRef.current = false;
+    const p = state.players[draggableId];
+    if (p) announce(`${p.name} moved to ${toList} position ${destination.index + 1}`);
   }
 
   return (
     <div className="min-h-screen text-slate-900 dark:text-slate-100 transition-colors">
       <div className="w-full md:w-[80vw] mx-auto p-4 space-y-4">
         {/* Top brand/header bar */}
-        <div className="relative overflow-hidden rounded-2xl p-[1px] bg-gradient-to-r from-brand-500 via-accent-400 to-emerald-400 animated-gradient-border">
-          <div className="rounded-2xl bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-3 flex items-center justify-between ring-1 ring-slate-200/60 dark:ring-white/10">
-            <div className="flex items-center gap-3">
-              <a href="/" className="px-2 py-1.5 rounded-full bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition" title="Back" aria-label="Back">
-                <ArrowLeftIcon className="w-5 h-5" />
-              </a>
-              <h1 className="text-xl font-extrabold bg-gradient-to-r from-brand-600 via-indigo-600 to-emerald-600 bg-clip-text text-transparent">Squad Draft</h1>
+        <div className="px-0 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl p-[2px] bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] shadow-[0_0_30px_rgba(124,77,255,0.55)]">
+              <div className="rounded-[12px] px-3 py-1.5 bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] ring-1 ring-[#888888]">
+                <h1 className="text-2xl md:text-3xl font-semibold tracking-wider text-slate-900">Squad Draft</h1>
+              </div>
             </div>
-            <button onClick={() => setDark(d => !d)} className="p-2 rounded-full bg-slate-200/70 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title={dark ? 'Switch to light' : 'Switch to dark'} aria-label="Toggle theme">
-              {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
-            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-full p-[2px] bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] shadow-[0_0_26px_rgba(124,77,255,0.55)]">
+              <a href="/" className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] ring-1 ring-[#888888] text-slate-900 hover:opacity-90 transition focus-ring" title="Home" aria-label="Home">
+                <HomeIcon className="w-5 h-5" />
+              </a>
+            </div>
+            <div className="inline-flex rounded-full p-[2px] bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] shadow-[0_0_26px_rgba(124,77,255,0.55)]">
+              <button onClick={() => setDark(d => !d)} className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] ring-1 ring-[#888888] text-slate-900 hover:opacity-90 transition focus-ring" title={dark ? 'Switch to light' : 'Switch to dark'} aria-label="Toggle theme">
+                {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Secondary toolbar */}
-        <header className="rounded-2xl ring-1 ring-slate-200/60 dark:ring-white/10 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-3">
+        <header className="rounded-2xl ring-1 ring-white/10 bg-white/10 backdrop-blur-md px-4 py-3">
           <div className="flex flex-wrap items-center gap-3">
             {/* Left: Add + Imports */}
             <div className="flex items-center gap-2">
@@ -676,15 +750,25 @@ export default function App() {
               <button className="px-3 py-2 rounded-full bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowImportJSON(true)} title="Import JSON" aria-label="Import JSON"><ArrowUpTrayIcon className="w-5 h-5" /><span>JSON</span></button>
             </div>
             {/* Middle: Search */}
-            <div className="flex-1 min-w-[200px] flex justify-center">
-              <input ref={searchRef} className="w-full max-w-md px-3 py-2 rounded-full border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-800/70 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" placeholder="Search across lists" value={query} onChange={e => setQuery(e.target.value)} />
+            <div className="flex-1 min-w-[200px] flex justify-center" role="search">
+              <div className="relative w-full max-w-md">
+                <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  ref={searchRef}
+                  className="w-full pl-9 pr-3 py-2 rounded-full border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-800/70 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  placeholder="Search across lists"
+                  aria-label="Search across lists"
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                />
+              </div>
             </div>
             {/* Right: Exports + Undo + Clear */}
             <div className="md:ml-auto flex items-center gap-2 flex-wrap relative">
               {/* Mobile: Export dropdown */}
               <div ref={exportMenuRef} className="relative md:hidden">
                 <button
-                  className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm"
+                  className="px-3 py-2 rounded-full bg-white/10 text-slate-200 hover:bg-white/20 ring-1 ring-white/10 transition inline-flex items-center gap-2 text-sm focus-ring"
                   onClick={() => setShowExportMenu(v => !v)}
                   aria-haspopup="menu"
                   aria-expanded={showExportMenu ? 'true' : 'false'}
@@ -696,54 +780,43 @@ export default function App() {
                 </button>
                 {showExportMenu && (
                   <div role="menu" className="absolute z-40 mt-2 w-40 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowExportMenu(false); exportCSV(); }}>CSV</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowExportMenu(false); exportPNG(); }}>PNG</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowExportMenu(false); exportPDF(); }}>PDF</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowExportMenu(false); exportJSON(); }}>JSON</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportCSV(); }} aria-label="Export CSV">CSV</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportPNG(); }} aria-label="Export PNG">PNG</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportPDF(); }} aria-label="Export PDF">PDF</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportJSON(); }} aria-label="Export JSON">JSON</button>
                   </div>
                 )}
               </div>
               {/* Desktop: Export buttons */}
-              <div className="hidden md:flex items-center gap-2 border-l border-slate-200/60 dark:border-white/10 pl-2">
-                <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportCSV} title="Export CSV" aria-label="Export CSV"><ArrowDownTrayIcon className="w-5 h-5" /><span>CSV</span></button>
-                <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportPNG} title="Export PNG" aria-label="Export PNG"><ArrowDownTrayIcon className="w-5 h-5" /><span>PNG</span></button>
-                <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportPDF} title="Export PDF" aria-label="Export PDF"><ArrowDownTrayIcon className="w-5 h-5" /><span>PDF</span></button>
-                <button className="px-3 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition inline-flex items-center gap-2 text-sm" onClick={exportJSON} title="Export JSON" aria-label="Export JSON"><ArrowDownTrayIcon className="w-5 h-5" /><span>JSON</span></button>
+              <div className="hidden md:flex items-center gap-2">
+                <button className="px-3 py-2 rounded-full bg-white/10 text-slate-200 hover:bg-white/20 ring-1 ring-white/10 transition inline-flex items-center gap-2 text-sm focus-ring" onClick={exportCSV} title="Export CSV" aria-label="Export CSV"><ArrowDownTrayIcon className="w-5 h-5" /><span>CSV</span></button>
+                <button className="px-3 py-2 rounded-full bg-white/10 text-slate-200 hover:bg-white/20 ring-1 ring-white/10 transition inline-flex items-center gap-2 text-sm focus-ring" onClick={exportPNG} title="Export PNG" aria-label="Export PNG"><ArrowDownTrayIcon className="w-5 h-5" /><span>PNG</span></button>
+                <button className="px-3 py-2 rounded-full bg-white/10 text-slate-200 hover:bg-white/20 ring-1 ring-white/10 transition inline-flex items-center gap-2 text-sm focus-ring" onClick={exportPDF} title="Export PDF" aria-label="Export PDF"><ArrowDownTrayIcon className="w-5 h-5" /><span>PDF</span></button>
+                <button className="px-3 py-2 rounded-full bg-white/10 text-slate-200 hover:bg-white/20 ring-1 ring-white/10 transition inline-flex items-center gap-2 text-sm focus-ring" onClick={exportJSON} title="Export JSON" aria-label="Export JSON"><ArrowDownTrayIcon className="w-5 h-5" /><span>JSON</span></button>
               </div>
-              <button
-                onClick={undo}
-                disabled={!lastSnapshot}
-                title="Undo"
-                aria-label="Undo"
-                className={`${lastSnapshot ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'} px-3 py-2 rounded-full shadow-sm transition inline-flex items-center justify-center`}
-              >
+              <button onClick={undo} disabled={!lastSnapshot} className={`${lastSnapshot ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'} px-3 py-2 rounded-full shadow-sm transition inline-flex items-center justify-center focus-ring`} title="Undo" aria-label="Undo">
                 <ArrowUturnLeftIcon className="w-5 h-5" />
               </button>
-              <button
-                onClick={clearAll}
-                title="Clear Draft"
-                aria-label="Clear Draft"
-                className="px-3 py-2 rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm transition text-sm"
-              >
-                Clear
-              </button>
+              <button onClick={clearAll} className="px-3 py-2 rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm transition text-sm focus-ring" title="Clear Draft" aria-label="Clear Draft">Clear</button>
             </div>
           </div>
         </header>
 
         <main className="flex gap-4">
           <div className="flex-1">
-            <DragDropContext onDragEnd={onDragEnd}>
-              <div ref={boardRef} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-1">
-                  <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-sm">
+            <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+              <div ref={boardRef} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-stretch">
+                {/* Available */}
+                <div className="h-full">
+                  <div className="h-full flex flex-col backdrop-blur-md rounded-2xl p-4 ring-1 ring-[#888888] shadow-sm hover:shadow-md transition"
+                       style={{ backgroundImage: 'linear-gradient(135deg, #FFFFFF26 0%, #FFFFFF00 50%, #FFFFFF00 100%)' }}>
                     <div className="flex justify-between items-center mb-3">
-                      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Available</h3>
-                      <div className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">{filtered.availableOrder.length}</div>
+                      <h3 className="text-base md:text-lg font-extrabold tracking-wide text-slate-200">AVAILABLE</h3>
+                      <div className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-slate-200">{filtered.availableOrder.length}</div>
                     </div>
                     <Droppable droppableId="available" direction="vertical" type="PLAYER">
-                      {(provided) => (
-                        <div ref={provided.innerRef} {...provided.droppableProps} className="min-h-[56vh]">
+                      {(provided, snapshot) => (
+                        <div ref={provided.innerRef} {...provided.droppableProps} className={`flex-1 min-h-[200px] rounded-xl transition ring-offset-1 ${getHighlightClass('available', snapshot.isDraggingOver)}`}>
                           {filtered.availableOrder.map((id, index) => (
                             <PlayerCard key={id} id={id} index={index} player={filtered.players[id]} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} isInAvailable />
                           ))}
@@ -754,10 +827,17 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Column droppableId="yes" title="YES" itemIds={filtered.buckets.yes} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} />
-                  <Column droppableId="maybe" title="MAYBE" itemIds={filtered.buckets.maybe} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} />
-                  <Column droppableId="no" title="NO" itemIds={filtered.buckets.no} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} />
+                {/* YES */}
+                <div className="h-full">
+                  <Column droppableId="yes" title="YES" itemIds={filtered.buckets.yes} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} />
+                </div>
+                {/* MAYBE */}
+                <div className="h-full">
+                  <Column droppableId="maybe" title="MAYBE" itemIds={filtered.buckets.maybe} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} />
+                </div>
+                {/* NO */}
+                <div className="h-full">
+                  <Column droppableId="no" title="NO" itemIds={filtered.buckets.no} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} />
                 </div>
               </div>
             </DragDropContext>
@@ -765,6 +845,9 @@ export default function App() {
 
           {/* Analytics panel intentionally commented out */}
         </main>
+
+        {/* A11y live region */}
+        <div ref={liveRef} className="sr-only" aria-live="polite" role="status"></div>
 
         {/* Modals */}
         <AddPlayerModal
