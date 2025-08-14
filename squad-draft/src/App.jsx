@@ -144,10 +144,12 @@ function ImportJSONModal({ open, onCancel, onImport }) {
   );
 }
 
-function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssign }) {
+function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssign, listId }) {
   const [isHovering, setIsHovering] = useState(false);
   const [showNameTooltip, setShowNameTooltip] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const nameContainerRef = useRef(null);
+  const menuRef = useRef(null);
   useEffect(() => {
     if (!showNameTooltip) return;
     function onDocMouseDown(e) {
@@ -167,85 +169,115 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
       clearTimeout(timer);
     };
   }, [showNameTooltip]);
+
+  useEffect(() => {
+    if (!showMenu) return;
+    function onDocMouseDown(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    }
+    function onWinKeyDown(e) { if (e.key === 'Escape') setShowMenu(false); }
+    document.addEventListener('mousedown', onDocMouseDown);
+    window.addEventListener('keydown', onWinKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onDocMouseDown);
+      window.removeEventListener('keydown', onWinKeyDown);
+    };
+  }, [showMenu]);
   return (
     <Draggable draggableId={id} index={index}>
       {(provided, snapshot) => {
         const isActive = isHovering || snapshot.isDragging;
-        const activeClass = isActive ? 'ring-2 ring-brand-400 dark:ring-brand-300 ring-offset-1 ring-offset-white dark:ring-offset-slate-900 shadow-lg z-50' : '';
+        const activeRing = isActive ? 'ring-2 ring-brand-400 dark:ring-brand-300 ring-offset-1 ring-offset-white dark:ring-offset-slate-900' : '';
+        const stripeColor = listId==='yes' ? '#34d399' : listId==='maybe' ? '#fbbf24' : listId==='no' ? '#f87171' : '#cbd5e1';
+        const wrapperZ = showMenu ? 'z-[60]' : (isActive ? 'z-40' : 'z-10');
         const card = (
-          <motion.div
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            style={provided.draggableProps.style}
-            initial={false}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-            className={`select-none cursor-grab active:cursor-grabbing bg-white/80 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 backdrop-blur-md rounded-xl shadow-sm hover:shadow-md px-3 py-2.5 md:py-2 mb-2 md:mb-2.5 flex justify-between items-start transition duration-300 ease-out hover:-translate-y-0.5 ${activeClass}`}
-          >
-            <div className="flex-1 min-w-0 pr-2">
-              <div ref={nameContainerRef} className="relative">
-                <div
-                  className="truncate font-semibold text-sm text-slate-800 dark:text-slate-100"
-                  title={player?.name}
-                  aria-label={player?.name}
-                  onClick={() => setShowNameTooltip(v => !v)}
-                >
-                  {player?.name}
-                </div>
-                {showNameTooltip && (
-                  <div role="tooltip" className="absolute left-0 top-full mt-1 z-50 px-2 py-1 rounded-md bg-slate-900 text-white text-xs shadow-lg whitespace-nowrap max-w-none">
+          <div ref={provided.innerRef} className={`relative ${wrapperZ} rounded-xl ${activeRing} mb-2 md:mb-2.5`} style={provided.draggableProps.style}>
+            <motion.div
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+              initial={false}
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+              style={{ backgroundImage: `linear-gradient(to right, ${stripeColor} 0, ${stripeColor} 4px, transparent 4px)` }}
+              className={`relative z-10 select-none cursor-grab active:cursor-grabbing bg-white/80 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 backdrop-blur-md rounded-xl shadow-sm hover:shadow-md pl-3 pr-3 py-2.5 md:py-2 flex justify-between items-start transition duration-300 ease-out hover:-translate-y-0.5`}
+            >
+              <div className="flex-1 min-w-0 pr-2">
+                <div ref={nameContainerRef} className="relative">
+                  <div
+                    className="truncate font-semibold text-sm text-slate-800 dark:text-slate-100"
+                    title={player?.name}
+                    aria-label={player?.name}
+                    onClick={() => setShowNameTooltip(v => !v)}
+                  >
                     {player?.name}
                   </div>
+                  {showNameTooltip && (
+                    <div role="tooltip" className="absolute left-0 top-full mt-1 z-50 px-2 py-1 rounded-md bg-slate-900 text-white text-xs shadow-lg whitespace-nowrap max-w-none">
+                      {player?.name}
+                    </div>
+                  )}
+                </div>
+                {player?.notes && <div className="truncate text-xs text-slate-500 dark:text-slate-400" title={player?.notes} aria-label={player?.notes}>{player.notes}</div>}
+              </div>
+              <div className="pc-right ml-2 flex items-center gap-2 shrink-0 relative">
+                {/* Quick assign buttons with container query-aware classes */}
+                <div className="pc-actions flex items-center gap-1">
+                  <button type="button" title="Move to YES" aria-label="Move to YES" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition focus-ring dark:bg-emerald-400/15 dark:text-emerald-300 dark:hover:bg-emerald-400/25" onClick={() => onAssign && onAssign(player.id, 'yes')}>
+                    <CheckIcon className="w-4 h-4" />
+                  </button>
+                  <button type="button" title="Move to MAYBE" aria-label="Move to MAYBE" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition focus-ring dark:bg-amber-400/15 dark:text-amber-300 dark:hover:bg-amber-400/25" onClick={() => onAssign && onAssign(player.id, 'maybe')}>
+                    <QuestionMarkCircleIcon className="w-4 h-4" />
+                  </button>
+                  <button type="button" title="Move to NO" aria-label="Move to NO" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-rose-100 text-rose-700 hover:bg-rose-200 transition focus-ring dark:bg-rose-400/15 dark:text-rose-300 dark:hover:bg-rose-400/25" onClick={() => onAssign && onAssign(player.id, 'no')}>
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <button type="button" className="pc-kebab h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition focus-ring dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20" title="More" aria-label="More actions" aria-haspopup="menu" aria-expanded={showMenu ? 'true' : 'false'} onClick={() => setShowMenu(v => !v)}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M12 7a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>
+                </button>
+                {showMenu && (
+                  <div ref={menuRef} role="menu" className="absolute right-0 top-9 z-[80] rounded-2xl bg-white/95 dark:bg-slate-800/95 ring-1 ring-slate-200/70 dark:ring-white/10 shadow-xl px-2 py-1 flex items-center gap-1">
+                    <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onAssign && onAssign(player.id, 'yes'); }} title="Move to YES" aria-label="Move to YES">
+                      <CheckIcon className="w-5 h-5 text-emerald-600" />
+                    </button>
+                    <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onAssign && onAssign(player.id, 'maybe'); }} title="Move to MAYBE" aria-label="Move to MAYBE">
+                      <QuestionMarkCircleIcon className="w-5 h-5 text-amber-600" />
+                    </button>
+                    <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onAssign && onAssign(player.id, 'no'); }} title="Move to NO" aria-label="Move to NO">
+                      <XMarkIcon className="w-5 h-5 text-rose-600" />
+                    </button>
+                    <div className="mx-1 h-5 w-px bg-slate-200/70 dark:bg-white/10" />
+                    <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onEdit && onEdit(player); }} title="Edit" aria-label="Edit">
+                      <PencilSquareIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                    </button>
+                    {isInAvailable ? (
+                      <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onRemove && onRemove(player.id); }} title="Delete" aria-label="Delete">
+                        <TrashIcon className="w-5 h-5 text-rose-600" />
+                      </button>
+                    ) : (
+                      <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onRemove && onRemove(player.id); }} title="Send to Available" aria-label="Send to Available">
+                        <ArrowUturnLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                      </button>
+                    )}
+                  </div>
+                )}
+                <button type="button" onClick={() => onEdit(player)} title="Edit" aria-label="Edit" className="pc-actions h-8 w-8 inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition focus-ring dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">
+                  <PencilSquareIcon className="w-4 h-4" />
+                </button>
+                {isInAvailable ? (
+                  <button type="button" onClick={() => onRemove(player.id)} title="Delete player" aria-label="Delete player" className="pc-actions h-8 w-8 inline-flex items-center justify-center rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 transition focus-ring">
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button type="button" onClick={() => onRemove(player.id)} title="Send to Available" aria-label="Send to Available" className="pc-actions h-8 w-8 inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition focus-ring dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">
+                    <ArrowUturnLeftIcon className="w-4 h-4" />
+                  </button>
                 )}
               </div>
-              {player?.notes && <div className="truncate text-xs text-slate-500 dark:text-slate-400" title={player?.notes} aria-label={player?.notes}>{player.notes}</div>}
-            </div>
-            <div className="ml-2 flex items-center gap-2 shrink-0">
-              {/* Quick assign buttons */}
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  title="Move to YES"
-                  aria-label="Move to YES"
-                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition focus-ring dark:bg-emerald-400/15 dark:text-emerald-300 dark:hover:bg-emerald-400/25"
-                  onClick={() => onAssign && onAssign(player.id, 'yes')}
-                >
-                  <CheckIcon className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  title="Move to MAYBE"
-                  aria-label="Move to MAYBE"
-                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition focus-ring dark:bg-amber-400/15 dark:text-amber-300 dark:hover:bg-amber-400/25"
-                  onClick={() => onAssign && onAssign(player.id, 'maybe')}
-                >
-                  <QuestionMarkCircleIcon className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  title="Move to NO"
-                  aria-label="Move to NO"
-                  className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-rose-100 text-rose-700 hover:bg-rose-200 transition focus-ring dark:bg-rose-400/15 dark:text-rose-300 dark:hover:bg-rose-400/25"
-                  onClick={() => onAssign && onAssign(player.id, 'no')}
-                >
-                  <XMarkIcon className="w-4 h-4" />
-                </button>
-              </div>
-              <button type="button" onClick={() => onEdit(player)} title="Edit" aria-label="Edit" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition focus-ring dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">
-                <PencilSquareIcon className="w-4 h-4" />
-              </button>
-              {isInAvailable ? (
-                <button type="button" onClick={() => onRemove(player.id)} title="Delete player" aria-label="Delete player" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 transition focus-ring">
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              ) : (
-                <button type="button" onClick={() => onRemove(player.id)} title="Send to Available" aria-label="Send to Available" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition focus-ring dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">
-                  <ArrowUturnLeftIcon className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         );
         return snapshot.isDragging ? createPortal(card, document.body) : card;
       }}
@@ -253,7 +285,7 @@ function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssi
   );
 }
 
-function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onAssign, getHighlightClass, onTitleChange }) {
+function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onAssign, getHighlightClass, onTitleChange, bump, pulse }) {
   const titleColor =
     droppableId === 'yes' ? 'text-emerald-700 dark:text-emerald-300' :
     droppableId === 'maybe' ? 'text-amber-700 dark:text-amber-300' :
@@ -278,7 +310,7 @@ function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onA
   function commit() { setIsEditing(false); if (draftTitle !== title) onTitleChange?.(droppableId, draftTitle); }
 
   return (
-    <div className={`min-w-[260px] backdrop-blur-md rounded-2xl p-4 ring-1 ${ringClass} shadow-sm hover:shadow-md transition`}
+    <div className={`min-w-[260px] backdrop-blur-md rounded-2xl p-4 ring-1 ${ringClass} shadow-sm hover:shadow-md transition ${pulse ? 'shimmer-border' : ''}`}
          style={{ backgroundImage: containerGradient }}>
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2">
@@ -292,19 +324,20 @@ function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onA
               autoFocus
             />
           ) : (
-            <h3 className={`text-base md:text-lg font-extrabold tracking-wide ${titleColor}`}>{title}</h3>
+            <h3 className={`text-base md:text-lg font-extrabold tracking-wide title-underline ${isEditing ? 'is-editing' : ''} ${titleColor}`}>{title}</h3>
           )}
           <button type="button" className="p-1 rounded-md text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-white/10" title="Edit title" aria-label="Edit title" onClick={() => setIsEditing(v => !v)}>
             <PencilSquareIcon className="w-4 h-4" />
           </button>
         </div>
-        <div className={`text-xs px-2 py-0.5 rounded-full ${badgeBg}`}>{itemIds.length}</div>
+        <div className={`text-xs px-2 py-0.5 rounded-full ${badgeBg} ${bump ? 'count-bump' : ''}`}>{itemIds.length}</div>
       </div>
       <Droppable droppableId={droppableId} direction="vertical" type="PLAYER">
         {(provided, snapshot) => (
-          <div ref={provided.innerRef} {...provided.droppableProps} className={`min-h-[200px] rounded-xl transition ring-offset-1 ${getHighlightClass(droppableId, snapshot.isDraggingOver)}`}>
+          <div ref={provided.innerRef} {...provided.droppableProps} className={`cq-list min-h-[200px] rounded-xl transition ring-offset-1 scroll-fade py-3 ${getHighlightClass(droppableId, snapshot.isDraggingOver)}`}
+               style={snapshot.isDraggingOver ? { outline: '2px dotted currentColor', outlineOffset: '2px' } : undefined}>
             {itemIds.map((id, index) => (
-              <PlayerCard key={id} id={id} index={index} player={playersMap[id]} onEdit={onEdit} onRemove={onRemove} onAssign={onAssign} isInAvailable={false} />
+              <PlayerCard key={id} id={id} index={index} player={playersMap[id]} onEdit={onEdit} onRemove={onRemove} onAssign={onAssign} isInAvailable={false} listId={droppableId} />
             ))}
             {provided.placeholder}
           </div>
@@ -392,8 +425,15 @@ export default function App() {
     setIsEditingAvailable(false);
     if ((draftAvailableTitle || '').trim() !== (state.titles.available || 'Available')) {
       updateTitle('available', draftAvailableTitle);
+      setPulseAvailable(true);
     }
   }
+  const [pulseAvailable, setPulseAvailable] = useState(true); // Set to true initially
+  useEffect(() => { const t = setTimeout(() => setPulseAvailable(false), 950); return () => clearTimeout(t); }, [pulseAvailable]);
+  const [pulseYes, setPulseYes] = useState(true);
+  const [pulseMaybe, setPulseMaybe] = useState(true);
+  const [pulseNo, setPulseNo] = useState(true);
+  useEffect(() => { const t = setTimeout(() => { setPulseYes(false); setPulseMaybe(false); setPulseNo(false); }, 1000); return () => clearTimeout(t); }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -579,29 +619,54 @@ export default function App() {
   async function exportPNG() {
     if (!boardRef.current) return;
     const node = boardRef.current;
+    const root = document.documentElement;
+    const isDark = root.classList.contains('dark');
+    const prevHidden = document.body.classList.contains('exporting');
     try {
-      const dataUrl = await toPng(node, { cacheBust: true, filter: (n) => true });
+      document.body.classList.add('exporting');
+      const dataUrl = await toPng(node, {
+        cacheBust: true,
+        backgroundColor: isDark ? '#0a0d16' : '#ffffff',
+      });
       const link = document.createElement('a');
       link.download = 'draft_board.png';
       link.href = dataUrl;
       link.click();
     } catch (e) {
       console.error('Export PNG error', e);
+    } finally {
+      if (!prevHidden) document.body.classList.remove('exporting');
     }
   }
 
   async function exportPDF() {
     if (!boardRef.current) return;
+    const root = document.documentElement;
+    const isDark = root.classList.contains('dark');
+    const prevHidden = document.body.classList.contains('exporting');
     try {
-      const dataUrl = await toPng(boardRef.current, { cacheBust: true });
-      const pdf = new jsPDF({ orientation: 'landscape' });
+      document.body.classList.add('exporting');
+      const dataUrl = await toPng(boardRef.current, {
+        cacheBust: true,
+        backgroundColor: isDark ? '#0a0d16' : '#ffffff',
+      });
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt' });
       const imgProps = pdf.getImageProperties(dataUrl);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 24; // narrow margins in points (~1/3 inch)
+      const availableWidth = pageWidth - margin * 2;
+      const scaledHeight = (imgProps.height * availableWidth) / imgProps.width;
+      const y = Math.max(margin, (pageHeight - scaledHeight) / 2);
+      // Fill page background explicitly (for dark theme especially)
+      pdf.setFillColor(isDark ? 10 : 255, isDark ? 13 : 255, isDark ? 22 : 255);
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+      pdf.addImage(dataUrl, 'PNG', margin, y, availableWidth, scaledHeight);
       pdf.save('draft_board.pdf');
     } catch (e) {
       console.error('Export PDF error', e);
+    } finally {
+      if (!prevHidden) document.body.classList.remove('exporting');
     }
   }
 
@@ -690,6 +755,8 @@ export default function App() {
     maybe: state.buckets.maybe.length,
     no: state.buckets.no.length,
   }), [state]);
+  const prevCountsRef = useRef(counts);
+  useEffect(() => { prevCountsRef.current = counts; }, [counts]);
 
   function handleEdit(player) {
     setEditingPlayer(player);
@@ -855,55 +922,60 @@ export default function App() {
         <main className="flex gap-4">
           <div className="flex-1">
             <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-              <div ref={boardRef} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Available */}
-                <div>
-                  <div className="backdrop-blur-md rounded-2xl p-4 ring-1 ring-[#888888] shadow-sm hover:shadow-md transition"
-                       style={{ backgroundImage: 'linear-gradient(135deg, #FFFFFF26 0%, #FFFFFF00 50%, #FFFFFF00 100%)' }}>
-                    <div className="flex justify-between items-center mb-3">
-                      <div className="flex items-center gap-2">
-                        {isEditingAvailable ? (
-                          <input
-                            className="text-base md:text-lg font-extrabold tracking-wide bg-transparent border-b border-slate-300/60 dark:border-white/20 focus:outline-none text-slate-800 dark:text-slate-200"
-                            value={draftAvailableTitle}
-                            onChange={e => setDraftAvailableTitle(e.target.value)}
-                            onBlur={commitAvailable}
-                            onKeyDown={e => { if (e.key === 'Enter') commitAvailable(); if (e.key === 'Escape') { setIsEditingAvailable(false); setDraftAvailableTitle(state.titles.available || 'Available'); } }}
-                            autoFocus
-                          />
-                        ) : (
-                          <h3 className="text-base md:text-lg font-extrabold tracking-wide text-slate-800 dark:text-slate-200">{state.titles.available}</h3>
-                        )}
-                        <button type="button" className="p-1 rounded-md text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-white/10" title="Edit title" aria-label="Edit title" onClick={() => setIsEditingAvailable(v => !v)}>
-                          <PencilSquareIcon className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-200">{filtered.availableOrder.length}</div>
-                    </div>
-                    <Droppable droppableId="available" direction="vertical" type="PLAYER">
-                      {(provided, snapshot) => (
-                        <div ref={provided.innerRef} {...provided.droppableProps} className={`min-h-[200px] rounded-xl transition ring-offset-1 ${getHighlightClass('available', snapshot.isDraggingOver)}`}>
-                          {filtered.availableOrder.map((id, index) => (
-                            <PlayerCard key={id} id={id} index={index} player={filtered.players[id]} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} isInAvailable />
-                          ))}
-                          {provided.placeholder}
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-0 noise-overlay rounded-2xl"></div>
+                <div className="pointer-events-none absolute inset-0 vignette-overlay rounded-2xl"></div>
+                <div ref={boardRef} className="relative grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Available */}
+                  <div>
+                    <div className={`${pulseAvailable ? 'shimmer-border' : ''} backdrop-blur-md rounded-2xl p-4 ring-1 ring-[#888888] shadow-sm hover:shadow-md transition`}
+                         style={{ backgroundImage: 'linear-gradient(135deg, #FFFFFF26 0%, #FFFFFF00 50%, #FFFFFF00 100%)' }}>
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center gap-2">
+                          {isEditingAvailable ? (
+                            <input
+                              className="text-base md:text-lg font-extrabold tracking-wide bg-transparent border-b border-slate-300/60 dark:border-white/20 focus:outline-none text-slate-800 dark:text-slate-200"
+                              value={draftAvailableTitle}
+                              onChange={e => setDraftAvailableTitle(e.target.value)}
+                              onBlur={commitAvailable}
+                              onKeyDown={e => { if (e.key === 'Enter') commitAvailable(); if (e.key === 'Escape') { setIsEditingAvailable(false); setDraftAvailableTitle(state.titles.available || 'Available'); } }}
+                              autoFocus
+                            />
+                          ) : (
+                            <h3 className="text-base md:text-lg font-extrabold tracking-wide text-slate-800 dark:text-slate-200">{state.titles.available}</h3>
+                          )}
+                          <button type="button" className="p-1 rounded-md text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg:white/10" title="Edit title" aria-label="Edit title" onClick={() => setIsEditingAvailable(v => !v)}>
+                            <PencilSquareIcon className="w-4 h-4" />
+                          </button>
                         </div>
-                      )}
-                    </Droppable>
+                        <div className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-200">{filtered.availableOrder.length}</div>
+                      </div>
+                      <Droppable droppableId="available" direction="vertical" type="PLAYER">
+                        {(provided, snapshot) => (
+                          <div ref={provided.innerRef} {...provided.droppableProps} className={`cq-list min-h-[200px] rounded-xl transition ring-offset-1 scroll-fade py-3 ${getHighlightClass('available', snapshot.isDraggingOver)}`}
+                               style={snapshot.isDraggingOver ? { outline: '2px dotted currentColor', outlineOffset: '2px' } : undefined}>
+                            {filtered.availableOrder.map((id, index) => (
+                              <PlayerCard key={id} id={id} index={index} player={filtered.players[id]} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} isInAvailable listId="available" />
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </div>
                   </div>
-                </div>
 
-                {/* YES */}
-                <div>
-                  <Column droppableId="yes" title={state.titles.yes} itemIds={filtered.buckets.yes} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={updateTitle} />
-                </div>
-                {/* MAYBE */}
-                <div>
-                  <Column droppableId="maybe" title={state.titles.maybe} itemIds={filtered.buckets.maybe} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={updateTitle} />
-                </div>
-                {/* NO */}
-                <div>
-                  <Column droppableId="no" title={state.titles.no} itemIds={filtered.buckets.no} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={updateTitle} />
+                  {/* YES */}
+                  <div>
+                    <Column droppableId="yes" title={state.titles.yes} itemIds={filtered.buckets.yes} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={(id, t)=>{updateTitle(id,t); setPulseYes(true);}} bump={pulseYes} pulse={pulseYes} />
+                  </div>
+                  {/* MAYBE */}
+                  <div>
+                    <Column droppableId="maybe" title={state.titles.maybe} itemIds={filtered.buckets.maybe} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={(id, t)=>{updateTitle(id,t); setPulseMaybe(true);}} bump={pulseMaybe} pulse={pulseMaybe} />
+                  </div>
+                  {/* NO */}
+                  <div>
+                    <Column droppableId="no" title={state.titles.no} itemIds={filtered.buckets.no} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={(id, t)=>{updateTitle(id,t); setPulseNo(true);}} bump={pulseNo} pulse={pulseNo} />
+                  </div>
                 </div>
               </div>
             </DragDropContext>

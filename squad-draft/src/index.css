@@ -21,14 +21,23 @@ html, body, #root { min-height: 100%; height: auto; }
 
 @layer base {
   html { font-family: theme('fontFamily.sans'); }
-  /* Layered gradient background with subtle accents */
+  /* Layered gradient background with subtle accents + global noise + vignette */
   body {
     background:
+      radial-gradient(1200px 800px at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.15) 100%), /* vignette */
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,.06) 1px, transparent 1px), /* noise layer 1 */
+      radial-gradient(circle at 3px 2px, rgba(0,0,0,.06) 1px, transparent 1px),       /* noise layer 2 */
       radial-gradient(900px 600px at 10% 5%, color-mix(in oklab, var(--accent-end) 12%, transparent), transparent 50%),
       radial-gradient(800px 600px at 85% 10%, color-mix(in oklab, var(--accent-start) 10%, transparent), transparent 52%),
       linear-gradient(180deg, var(--bg1), var(--bg2));
     background-attachment: fixed;
-    background-size: 160% 160%, 160% 160%, 100% 100%;
+    background-size:
+      100% 100%,
+      4px 4px,
+      6px 6px,
+      160% 160%,
+      160% 160%,
+      100% 100%;
     animation: page-pan 22s ease-in-out infinite;
   }
   @media (prefers-reduced-motion: reduce) {
@@ -58,9 +67,9 @@ html, body, #root { min-height: 100%; height: auto; }
 
 /* Page background slow pan */
 @keyframes page-pan {
-  0% { background-position: 0% 0%, 100% 0%, 0% 0%; }
-  50% { background-position: 100% 0%, 0% 0%, 0% 0%; }
-  100% { background-position: 0% 0%, 100% 0%, 0% 0%; }
+  0% { background-position: 0% 0%, 100% 0%, 0% 0%, 0% 0%, 100% 0%, 0% 0%; }
+  50% { background-position: 100% 0%, 0% 0%, 0% 0%, 100% 0%, 0% 0%, 0% 0%; }
+  100% { background-position: 0% 0%, 100% 0%, 0% 0%, 0% 0%, 100% 0%, 0% 0%; }
 }
 
 /* Reusable accessible focus ring */
@@ -68,3 +77,71 @@ html, body, #root { min-height: 100%; height: auto; }
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-start) 40%, transparent);
 }
+
+/* Count bump animation */
+@keyframes bump {
+  0% { transform: scale(1); }
+  20% { transform: scale(1.12); }
+  40% { transform: scale(0.98); }
+  60% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.count-bump { animation: bump 450ms ease-out; }
+
+/* Scroll fade mask for lists */
+.scroll-fade {
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,1) 14px, rgba(0,0,0,1) calc(100% - 14px), rgba(0,0,0,0) 100%);
+          mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,1) 14px, rgba(0,0,0,1) calc(100% - 14px), rgba(0,0,0,0) 100%);
+}
+
+/* Title underline glow */
+.title-underline { position: relative; }
+.title-underline::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -2px; height: 2px; width: 100%;
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+  opacity: .25;
+}
+.title-underline.is-editing::after { opacity: .6; }
+
+/* Container queries for narrow lists */
+.cq-list { container-type: inline-size; }
+.pc-kebab { display: none; }
+@container (max-width: 300px) {
+  .pc-actions { display: none !important; }
+  .pc-kebab { display: inline-flex !important; }
+}
+
+/* Shimmer gradient border using mask */
+@keyframes shimmer {
+  0% { background-position: 0% 0; opacity: .9; }
+  100% { background-position: 200% 0; opacity: 0; }
+}
+.shimmer-border { position: relative; }
+.shimmer-border::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end), var(--accent-start));
+  background-size: 200% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: shimmer 1100ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-border::after { animation: none; opacity: 0; }
+}
+
+/* Shimmer border pulse (fallback) */
+@keyframes pulseBorder { from { opacity: .6; transform: scale(.985); } to { opacity: 0; transform: scale(1.015); } }
+.pulse-border { animation: pulseBorder 900ms ease-out; }
+
+/* Hide interactive controls during export captures */
+.exporting .pc-actions,
+.exporting .pc-kebab { visibility: hidden !important; pointer-events: none !important; }
+.exporting .pc-right { width: 0 !important; padding-left: 0 !important; margin-left: 0 !important; }
+.exporting * { transition: none !important; animation: none !important; }
