@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { createPortal } from 'react-dom';
 import { ArrowDownTrayIcon, ArrowUpTrayIcon, PencilSquareIcon, TrashIcon, ArrowUturnLeftIcon, ArrowLeftIcon, HomeIcon, SunIcon, MoonIcon, PlusIcon, CheckIcon, QuestionMarkCircleIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
+import { ensureValidRoot, addTournament, addDraft, addDraftWithBoard, renameTournament, renameDraft, deleteTournament, deleteDraft, duplicateDraft, duplicateTournament, moveDraft, normalizeBoardState } from './lib/storage';
+import { useRootStorage } from './hooks/useRootStorage';
 
 function ModalShell({ open, title, children, onClose }) {
   if (!open) return null;
@@ -127,7 +129,7 @@ function ImportCSVModal({ open, onCancel, onImport }) {
   );
 }
 
-function ImportJSONModal({ open, onCancel, onImport }) {
+function ImportJSONModal({ open, onCancel, onImport, onImportAsNew }) {
   const [text, setText] = useState('');
   useEffect(() => { if (open) setText(''); }, [open]);
   return (
@@ -135,9 +137,12 @@ function ImportJSONModal({ open, onCancel, onImport }) {
       <div className="space-y-3">
         <p className="text-sm text-slate-600 dark:text-slate-400">Paste a full board export (JSON).</p>
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={10} className="w-full px-3 py-2 rounded-lg border border-slate-200/70 dark:border-white/10 bg-white dark:bg-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" placeholder='{"players": {"id": {"id":"id","name":"Alice"}}, "availableOrder": ["id"], "buckets": {"yes":[],"maybe":[],"no":[]}}' />
-        <div className="flex justify-end gap-2 pt-1">
+        <div className="flex justify-between items-center gap-2 pt-1">
           <button type="button" onClick={onCancel} className="px-3 py-2 rounded-full bg-slate-200/70 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancel</button>
-          <button type="button" onClick={() => onImport(text)} disabled={!text.trim()} className={`px-3 py-2 rounded-full transition ${!text.trim() ? 'opacity-50 bg-brand-600 text-white' : 'bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700'}`}>Import</button>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => onImport(text)} disabled={!text.trim()} className={`px-3 py-2 rounded-full transition ${!text.trim() ? 'opacity-50 bg-brand-600 text-white' : 'bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700'}`}>Replace current</button>
+            <button type="button" onClick={() => onImportAsNew(text)} disabled={!text.trim()} className={`px-3 py-2 rounded-full transition ${!text.trim() ? 'opacity-50 bg-accent-600 text-white' : 'bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700'}`}>Add as new draft</button>
+          </div>
         </div>
       </div>
     </ModalShell>
@@ -310,7 +315,7 @@ function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onA
   function commit() { setIsEditing(false); if (draftTitle !== title) onTitleChange?.(droppableId, draftTitle); }
 
   return (
-    <div className={`min-w-[260px] backdrop-blur-md rounded-2xl p-4 ring-1 ${ringClass} shadow-sm hover:shadow-md transition ${pulse ? 'shimmer-border' : ''}`}
+    <div className={`min-w-[200px] backdrop-blur-md rounded-2xl p-4 ring-1 ${ringClass} shadow-sm hover:shadow-md transition ${pulse ? 'shimmer-border' : ''}`}
          style={{ backgroundImage: containerGradient }}>
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2">
@@ -396,7 +401,13 @@ function normalizeState(s) {
 }
 
 export default function App() {
-  const [state, setState] = useState(() => normalizeState(loadFromStorage() || defaultState()));
+  // Root (v2) state
+  const [root, setRoot] = useRootStorage();
+  // Selected draft derived from root
+  const currentDraftId = root.ui.currentDraftId;
+  const currentDraft = root.drafts[currentDraftId];
+
+  const [state, setState] = useState(() => normalizeBoardState(currentDraft));
   const [lastSnapshot, setLastSnapshot] = useState(null);
   const [query, setQuery] = useState('');
   const [dark, setDark] = useState(() => {
@@ -418,6 +429,99 @@ export default function App() {
   function announce(msg) {
     if (liveRef.current) liveRef.current.textContent = msg;
   }
+
+  // Tournament/Draft menus
+  const [showTournamentMenu, setShowTournamentMenu] = useState(false);
+  const [showDraftMenu, setShowDraftMenu] = useState(false);
+  const tournamentMenuRef = useRef(null);
+  const draftMenuRef = useRef(null);
+  const [showJSONMenu, setShowJSONMenu] = useState(false);
+  const jsonMenuRef = useRef(null);
+
+  const [orgUndo, setOrgUndo] = useState(null); // { snapshot, label }
+  function applyOrg(label, mutator) {
+    setRoot(prev => {
+      const snapshot = JSON.parse(JSON.stringify(prev));
+      const next = mutator(prev);
+      setOrgUndo({ snapshot, label });
+      return next;
+    });
+  }
+  function undoOrg() {
+    if (!orgUndo) return;
+    setRoot(orgUndo.snapshot);
+    setOrgUndo(null);
+  }
+
+  const activeTournament = root.tournaments[root.ui.currentTournamentId];
+  const activeDraft = root.drafts[root.ui.currentDraftId];
+
+  function selectTournament(id) {
+    setRoot(prev => {
+      const next = JSON.parse(JSON.stringify(prev));
+      if (!next.tournaments[id]) return next;
+      next.ui.currentTournamentId = id;
+      const t = next.tournaments[id];
+      const firstDraft = (t.draftIds && t.draftIds[0]) || Object.keys(next.drafts).find(did => next.drafts[did].tournamentId === id);
+      if (firstDraft) next.ui.currentDraftId = firstDraft;
+      return ensureValidRoot(next);
+    });
+  }
+
+  function selectDraft(id) {
+    setRoot(prev => {
+      const next = JSON.parse(JSON.stringify(prev));
+      if (!next.drafts[id]) return next;
+      next.ui.currentDraftId = id;
+      next.ui.currentTournamentId = next.drafts[id].tournamentId;
+      return ensureValidRoot(next);
+    });
+  }
+
+  function promptRenameTournament() {
+    const currentName = activeTournament?.name || '';
+    const name = window.prompt('Rename tournament', currentName);
+    if (!name) return;
+    applyOrg('Renamed tournament', prev => renameTournament(prev, activeTournament.id, name.trim()));
+  }
+
+  function promptRenameDraft() {
+    const currentName = activeDraft?.name || '';
+    const name = window.prompt('Rename draft', currentName);
+    if (!name) return;
+    applyOrg('Renamed draft', prev => renameDraft(prev, activeDraft.id, name.trim()));
+  }
+
+  function createTournamentAction() { applyOrg('Created tournament', prev => addTournament(prev)); }
+  function createDraftAction() { applyOrg('Created draft', prev => addDraft(prev, activeTournament.id)); }
+  function duplicateTournamentAction() { applyOrg('Duplicated tournament', prev => duplicateTournament(prev, activeTournament.id)); }
+  function duplicateDraftAction() { applyOrg('Duplicated draft', prev => duplicateDraft(prev, activeDraft.id)); }
+  function deleteTournamentAction() {
+    if (!confirm(`Delete tournament "${activeTournament?.name}" and all its drafts?`)) return;
+    applyOrg('Deleted tournament', prev => deleteTournament(prev, activeTournament.id));
+  }
+  function deleteDraftAction() {
+    if (!confirm(`Delete draft "${activeDraft?.name}"?`)) return;
+    applyOrg('Deleted draft', prev => deleteDraft(prev, activeDraft.id));
+  }
+  function moveDraftTo(tid) { applyOrg('Moved draft', prev => moveDraft(prev, activeDraft.id, tid)); }
+
+  // Close menus on outside click/escape
+  useEffect(() => {
+    function onDoc(e) {
+      if (showTournamentMenu && tournamentMenuRef.current && !tournamentMenuRef.current.contains(e.target)) setShowTournamentMenu(false);
+      if (showDraftMenu && draftMenuRef.current && !draftMenuRef.current.contains(e.target)) setShowDraftMenu(false);
+      if (showExportMenu && exportMenuRef.current && !exportMenuRef.current.contains(e.target)) setShowExportMenu(false);
+      if (showJSONMenu && jsonMenuRef.current && !jsonMenuRef.current.contains(e.target)) setShowJSONMenu(false);
+    }
+    function onKey(e) { if (e.key === 'Escape') { setShowTournamentMenu(false); setShowDraftMenu(false); setShowExportMenu(false); setShowJSONMenu(false); } }
+    document.addEventListener('mousedown', onDoc);
+    window.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDoc); window.removeEventListener('keydown', onKey); };
+  }, [showTournamentMenu, showDraftMenu, showExportMenu, showJSONMenu]);
+
+  function sanitizeName(s) { return (s || '').replace(/[/\\?%*:|"<>]/g, '_'); }
+
   const [isEditingAvailable, setIsEditingAvailable] = useState(false);
   const [draftAvailableTitle, setDraftAvailableTitle] = useState('Available');
   useEffect(() => { setDraftAvailableTitle(state.titles.available || 'Available'); }, [state.titles?.available]);
@@ -435,15 +539,38 @@ export default function App() {
   const [pulseNo, setPulseNo] = useState(true);
   useEffect(() => { const t = setTimeout(() => { setPulseYes(false); setPulseMaybe(false); setPulseNo(false); }, 1000); return () => clearTimeout(t); }, []);
 
+  // Sync board state when switching drafts
+  useEffect(() => {
+    setState(normalizeBoardState(root.drafts[root.ui.currentDraftId]));
+    setIsEditingAvailable(false);
+  }, [root.ui.currentDraftId]);
+
+  // Helper: write local board state back into root under current draft
+  function writeBoard(updater) {
+    setRoot(prev => {
+      const next = JSON.parse(JSON.stringify(prev));
+      const did = next.ui.currentDraftId;
+      const curr = next.drafts[did];
+      const updated = typeof updater === 'function' ? updater(curr) : updater;
+      next.drafts[did] = normalizeBoardState(updated);
+      next.drafts[did].updatedAt = Date.now();
+      return ensureValidRoot(next);
+    });
+  }
+
+  // Persist local board state changes into root
+  useEffect(() => {
+    if (!currentDraft) return;
+    writeBoard(state);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
     localStorage.setItem('squad_dark', dark ? '1' : '0');
   }, [dark]);
 
-  useEffect(() => {
-    const id = setTimeout(() => saveToStorage(state), 120);
-    return () => clearTimeout(id);
-  }, [state]);
+  // Root persistence handled in useRootStorage hook
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -489,7 +616,6 @@ export default function App() {
 
   function clearAll() {
     if (!confirm('Clear all players and draft lists? This cannot be undone.')) return;
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
     setLastSnapshot(null);
     setState({ players: {}, availableOrder: [], buckets: { yes: [], maybe: [], no: [] }, titles: { available: 'Available', yes: 'YES', maybe: 'MAYBE', no: 'NO' } });
   }
@@ -611,7 +737,9 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'draft_export.csv';
+    const tName = sanitizeName(activeTournament?.name || 'Tournament');
+    const dName = sanitizeName(activeDraft?.name || 'Draft');
+    a.download = `${tName} - ${dName} - draft_export.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -619,8 +747,8 @@ export default function App() {
   async function exportPNG() {
     if (!boardRef.current) return;
     const node = boardRef.current;
-    const root = document.documentElement;
-    const isDark = root.classList.contains('dark');
+    const rootEl = document.documentElement;
+    const isDark = rootEl.classList.contains('dark');
     const prevHidden = document.body.classList.contains('exporting');
     try {
       document.body.classList.add('exporting');
@@ -629,7 +757,9 @@ export default function App() {
         backgroundColor: isDark ? '#0a0d16' : '#ffffff',
       });
       const link = document.createElement('a');
-      link.download = 'draft_board.png';
+      const tName = sanitizeName(activeTournament?.name || 'Tournament');
+      const dName = sanitizeName(activeDraft?.name || 'Draft');
+      link.download = `${tName} - ${dName} - draft_board.png`;
       link.href = dataUrl;
       link.click();
     } catch (e) {
@@ -662,7 +792,9 @@ export default function App() {
       pdf.setFillColor(isDark ? 10 : 255, isDark ? 13 : 255, isDark ? 22 : 255);
       pdf.rect(0, 0, pageWidth, pageHeight, 'F');
       pdf.addImage(dataUrl, 'PNG', margin, y, availableWidth, scaledHeight);
-      pdf.save('draft_board.pdf');
+      const tName = sanitizeName(activeTournament?.name || 'Tournament');
+      const dName = sanitizeName(activeDraft?.name || 'Draft');
+      pdf.save(`${tName} - ${dName} - draft_board.pdf`);
     } catch (e) {
       console.error('Export PDF error', e);
     } finally {
@@ -677,7 +809,9 @@ export default function App() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'draft_export.json';
+      const tName = sanitizeName(activeTournament?.name || 'Tournament');
+      const dName = sanitizeName(activeDraft?.name || 'Draft');
+      a.download = `${tName} - ${dName} - draft_export.json`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
@@ -685,18 +819,22 @@ export default function App() {
     }
   }
 
-  function importJSONText(text) {
-    try {
-      const parsed = JSON.parse(text);
-      if (!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON');
-      if (!parsed.players || !parsed.availableOrder || !parsed.buckets) throw new Error('Missing keys');
-      if (!parsed.buckets.yes || !parsed.buckets.maybe || !parsed.buckets.no) throw new Error('Missing bucket lists');
-      snapshotAnd(() => setState(normalizeState(parsed)));
-    } catch (e) {
-      alert('Invalid JSON format for board.');
-      console.error('Import JSON error', e);
+  function importJSONText(text, mode = 'replace') {
+  try {
+    const parsed = JSON.parse(text);
+    if (!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON');
+    if (!parsed.players || !parsed.availableOrder || !parsed.buckets) throw new Error('Missing keys');
+    if (!parsed.buckets.yes || !parsed.buckets.maybe || !parsed.buckets.no) throw new Error('Missing bucket lists');
+    if (mode === 'replace') {
+      snapshotAnd(() => setState(normalizeBoardState(parsed)));
+    } else if (mode === 'new-draft') {
+      setRoot(prev => addDraftWithBoard(prev, root.ui.currentTournamentId, 'Imported Draft', parsed));
     }
+  } catch (e) {
+    alert('Invalid JSON format for board.');
+    console.error('Import JSON error', e);
   }
+}
 
   function moveItemToEdge(id, edge) {
     const isStart = edge === 'start';
@@ -831,6 +969,34 @@ export default function App() {
     }));
   }
 
+  function exportTournamentJSON() {
+    try {
+      const tid = root.ui.currentTournamentId;
+      const t = root.tournaments[tid];
+      const bundle = {
+        version: 2,
+        tournament: { id: t.id, name: t.name },
+        drafts: (t.draftIds || []).map(did => {
+          const d = root.drafts[did];
+          if (!d) return null;
+          const { id, name, players, availableOrder, buckets, titles } = d;
+          return { id, name, players, availableOrder, buckets, titles };
+        }).filter(Boolean)
+      };
+      const json = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const tName = sanitizeName(t?.name || 'Tournament');
+      a.download = `${tName} - tournament_export.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Export Tournament JSON error', e);
+    }
+  }
+
   return (
     <div className="min-h-screen text-slate-900 dark:text-slate-100 transition-colors">
       <div className="w-full md:w-[80vw] mx-auto p-4 space-y-4">
@@ -840,6 +1006,59 @@ export default function App() {
             <div className="rounded-xl p-[2px] bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] shadow-[0_0_30px_rgba(124,77,255,0.55)]">
               <div className="rounded-[12px] px-3 py-1.5 bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] ring-1 ring-[#888888]">
                 <h1 className="text-2xl md:text-3xl font-semibold tracking-wider text-slate-900">Squad Draft</h1>
+              </div>
+            </div>
+            {/* Moved selectors into main header with labels */}
+            <div className="hidden md:flex items-end gap-3 ml-2">
+              <div className="flex flex-col items-start">
+                <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Tournament:</div>
+                <div ref={tournamentMenuRef} className="relative">
+                  <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowTournamentMenu(v => !v)} aria-haspopup="menu" aria-expanded={showTournamentMenu ? 'true' : 'false'} title="Select tournament" aria-label="Select tournament">
+                    <span>{activeTournament?.name || 'Tournament'}</span>
+                  </button>
+                  {showTournamentMenu && (
+                    <div role="menu" className="absolute z-[300] mt-2 w-60 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                      {Object.values(root.tournaments).map(t => (
+                        <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowTournamentMenu(false); selectTournament(t.id); }}>{t.name}</button>
+                      ))}
+                      <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); createTournamentAction(); }}>New tournament</button>
+                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); promptRenameTournament(); }}>Rename tournament</button>
+                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); duplicateTournamentAction(); }}>Duplicate tournament</button>
+                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowTournamentMenu(false); deleteTournamentAction(); }}>Delete tournament</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col items-start">
+                <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Draft:</div>
+                <div ref={draftMenuRef} className="relative">
+                  <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowDraftMenu(v => !v)} aria-haspopup="menu" aria-expanded={showDraftMenu ? 'true' : 'false'} title="Select draft" aria-label="Select draft">
+                    <span>{activeDraft?.name || 'Draft'}</span>
+                  </button>
+                  {showDraftMenu && (
+                    <div role="menu" className="absolute z-[300] mt-2 w-64 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                      {(activeTournament?.draftIds || []).map(did => {
+                        const d = root.drafts[did];
+                        return (
+                          <button key={did} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowDraftMenu(false); selectDraft(did); }}>{d?.name || 'Draft'}</button>
+                        );
+                      })}
+                      <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); createDraftAction(); }}>New draft</button>
+                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); promptRenameDraft(); }}>Rename draft</button>
+                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); duplicateDraftAction(); }}>Duplicate draft</button>
+                      {Object.values(root.tournaments).length > 1 && (
+                        <div className="px-3 py-2 text-xs text-slate-500">Move to</div>
+                      )}
+                      {Object.values(root.tournaments).filter(t => t.id !== activeTournament?.id).map(t => (
+                        <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); moveDraftTo(t.id); }}>→ {t.name}</button>
+                      ))}
+                      <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowDraftMenu(false); deleteDraftAction(); }}>Delete draft</button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -857,8 +1076,64 @@ export default function App() {
           </div>
         </div>
 
+        {/* Mobile selectors navbar */}
+        <div className="md:hidden relative z-[220] rounded-2xl ring-1 ring-white/10 bg-white/10 backdrop-blur-md px-3 py-2">
+          <div className="flex items-end gap-3 flex-wrap">
+            <div className="flex flex-col items-start">
+              <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Tournament:</div>
+              <div ref={tournamentMenuRef} className="relative">
+                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowTournamentMenu(v => !v)} aria-haspopup="menu" aria-expanded={showTournamentMenu ? 'true' : 'false'} title="Select tournament" aria-label="Select tournament">
+                  <span>{activeTournament?.name || 'Tournament'}</span>
+                </button>
+                {showTournamentMenu && (
+                  <div role="menu" className="absolute z-[300] mt-2 w-60 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                    {Object.values(root.tournaments).map(t => (
+                      <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowTournamentMenu(false); selectTournament(t.id); }}>{t.name}</button>
+                    ))}
+                    <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); createTournamentAction(); }}>New tournament</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); promptRenameTournament(); }}>Rename tournament</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); duplicateTournamentAction(); }}>Duplicate tournament</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowTournamentMenu(false); deleteTournamentAction(); }}>Delete tournament</button>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col items-start">
+              <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Draft:</div>
+              <div ref={draftMenuRef} className="relative">
+                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowDraftMenu(v => !v)} aria-haspopup="menu" aria-expanded={showDraftMenu ? 'true' : 'false'} title="Select draft" aria-label="Select draft">
+                  <span>{activeDraft?.name || 'Draft'}</span>
+                </button>
+                {showDraftMenu && (
+                  <div role="menu" className="absolute z-[300] mt-2 w-64 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                    {(activeTournament?.draftIds || []).map(did => {
+                      const d = root.drafts[did];
+                      return (
+                        <button key={did} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowDraftMenu(false); selectDraft(did); }}>{d?.name || 'Draft'}</button>
+                      );
+                    })}
+                    <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); createDraftAction(); }}>New draft</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); promptRenameDraft(); }}>Rename draft</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); duplicateDraftAction(); }}>Duplicate draft</button>
+                    {Object.values(root.tournaments).length > 1 && (
+                      <div className="px-3 py-2 text-xs text-slate-500">Move to</div>
+                    )}
+                    {Object.values(root.tournaments).filter(t => t.id !== activeTournament?.id).map(t => (
+                      <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); moveDraftTo(t.id); }}>→ {t.name}</button>
+                    ))}
+                    <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowDraftMenu(false); deleteDraftAction(); }}>Delete draft</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Secondary toolbar */}
-        <header className="rounded-2xl ring-1 ring-white/10 bg-white/10 backdrop-blur-md px-4 py-3">
+        <header className="relative z-[200] rounded-2xl ring-1 ring-white/10 bg-white/10 backdrop-blur-md px-4 py-3">
           <div className="flex flex-wrap items-center gap-3">
             {/* Left: Add + Imports */}
             <div className="flex items-center gap-2">
@@ -867,7 +1142,7 @@ export default function App() {
               <button className="px-3 py-2 rounded-full bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowImportJSON(true)} title="Import JSON" aria-label="Import JSON"><ArrowUpTrayIcon className="w-5 h-5" /><span>JSON</span></button>
             </div>
             {/* Middle: Search */}
-            <div className="flex-1 min-w-[200px] flex justify-center" role="search">
+            <div className="flex-1 min-w-[200px] flex justify-end min-[1288px]:justify-center" role="search">
               <div className="relative w-full max-w-md">
                 <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
@@ -881,7 +1156,7 @@ export default function App() {
               </div>
             </div>
             {/* Right: Exports + Undo + Clear */}
-            <div className="md:ml-auto flex items-center gap-2 flex-wrap relative">
+            <div className="md:ml-auto flex items-center gap-2 flex-wrap relative w-full min-[1288px]:w-auto justify-start min-[1288px]:justify-end">
               {/* Mobile: Export dropdown */}
               <div ref={exportMenuRef} className="relative md:hidden">
                 <button
@@ -896,11 +1171,12 @@ export default function App() {
                   <span>Export</span>
                 </button>
                 {showExportMenu && (
-                  <div role="menu" className="absolute z-40 mt-2 w-40 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                  <div role="menu" className="absolute z-[120] mt-2 w-40 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
                     <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportCSV(); }} aria-label="Export CSV">CSV</button>
                     <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportPNG(); }} aria-label="Export PNG">PNG</button>
                     <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportPDF(); }} aria-label="Export PDF">PDF</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportJSON(); }} aria-label="Export JSON">JSON</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportJSON(); }} aria-label="Export JSON">Draft JSON</button>
+                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportTournamentJSON(); }} aria-label="Export Tournament JSON">Tournament JSON</button>
                   </div>
                 )}
               </div>
@@ -909,7 +1185,26 @@ export default function App() {
                 <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportCSV} title="Export CSV" aria-label="Export CSV"><ArrowDownTrayIcon className="w-5 h-5" /><span>CSV</span></button>
                 <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportPNG} title="Export PNG" aria-label="Export PNG"><ArrowDownTrayIcon className="w-5 h-5" /><span>PNG</span></button>
                 <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportPDF} title="Export PDF" aria-label="Export PDF"><ArrowDownTrayIcon className="w-5 h-5" /><span>PDF</span></button>
-                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportJSON} title="Export JSON" aria-label="Export JSON"><ArrowDownTrayIcon className="w-5 h-5" /><span>JSON</span></button>
+                {/* JSON dropdown (desktop) */}
+                <div className="relative" ref={jsonMenuRef}>
+                  <button
+                    className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20"
+                    onClick={() => setShowJSONMenu(v => !v)}
+                    aria-haspopup="menu"
+                    aria-expanded={showJSONMenu ? 'true' : 'false'}
+                    title="Export JSON"
+                    aria-label="Export JSON"
+                  >
+                    <ArrowDownTrayIcon className="w-5 h-5" />
+                    <span>JSON</span>
+                  </button>
+                  {showJSONMenu && (
+                    <div role="menu" className="absolute z-[200] mt-2 w-44 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowJSONMenu(false); exportJSON(); }} aria-label="Export Draft JSON">Draft</button>
+                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowJSONMenu(false); exportTournamentJSON(); }} aria-label="Export Tournament JSON">Tournament</button>
+                    </div>
+                  )}
+                </div>
               </div>
               <button onClick={undo} disabled={!lastSnapshot} className={`${lastSnapshot ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'} px-3 py-2 rounded-full shadow-sm transition inline-flex items-center justify-center focus-ring`} title="Undo" aria-label="Undo">
                 <ArrowUturnLeftIcon className="w-5 h-5" />
@@ -925,10 +1220,10 @@ export default function App() {
               <div className="relative">
                 <div className="pointer-events-none absolute inset-0 noise-overlay rounded-2xl"></div>
                 <div className="pointer-events-none absolute inset-0 vignette-overlay rounded-2xl"></div>
-                <div ref={boardRef} className="relative grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div ref={boardRef} className="relative grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-4 gap-4">
                   {/* Available */}
                   <div>
-                    <div className={`${pulseAvailable ? 'shimmer-border' : ''} backdrop-blur-md rounded-2xl p-4 ring-1 ring-[#888888] shadow-sm hover:shadow-md transition`}
+                    <div className={`min-w-[200px] ${pulseAvailable ? 'shimmer-border' : ''} backdrop-blur-md rounded-2xl p-4 ring-1 ring-[#888888] shadow-sm hover:shadow-md transition`}
                          style={{ backgroundImage: 'linear-gradient(135deg, #FFFFFF26 0%, #FFFFFF00 50%, #FFFFFF00 100%)' }}>
                       <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center gap-2">
@@ -944,7 +1239,7 @@ export default function App() {
                           ) : (
                             <h3 className="text-base md:text-lg font-extrabold tracking-wide text-slate-800 dark:text-slate-200">{state.titles.available}</h3>
                           )}
-                          <button type="button" className="p-1 rounded-md text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg:white/10" title="Edit title" aria-label="Edit title" onClick={() => setIsEditingAvailable(v => !v)}>
+                          <button type="button" className="p-1 rounded-md text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-white/10" title="Edit title" aria-label="Edit title" onClick={() => setIsEditingAvailable(v => !v)}>
                             <PencilSquareIcon className="w-4 h-4" />
                           </button>
                         </div>
@@ -987,6 +1282,15 @@ export default function App() {
         {/* A11y live region */}
         <div ref={liveRef} className="sr-only" aria-live="polite" role="status"></div>
 
+        {/* Org Undo Toast */}
+        {orgUndo && (
+          <div className="fixed left-4 bottom-4 z-[300] rounded-xl bg-slate-900/90 text-white px-3 py-2 shadow-lg ring-1 ring-white/10 flex items-center gap-3">
+            <span className="text-sm">{orgUndo.label}. <span className="opacity-80">Undo?</span></span>
+            <button onClick={undoOrg} className="px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-sm">Undo</button>
+            <button onClick={() => setOrgUndo(null)} className="px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-sm">Dismiss</button>
+          </div>
+        )}
+
         {/* Modals */}
         <AddPlayerModal
           open={showAddModal}
@@ -1010,7 +1314,8 @@ export default function App() {
         <ImportJSONModal
           open={showImportJSON}
           onCancel={() => setShowImportJSON(false)}
-          onImport={(text) => { setShowImportJSON(false); importJSONText(text); }}
+          onImport={(text) => { setShowImportJSON(false); importJSONText(text, 'replace'); }}
+          onImportAsNew={(text) => { setShowImportJSON(false); importJSONText(text, 'new-draft'); }}
         />
 
       </div>
