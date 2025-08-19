@@ -160,14 +160,23 @@ export function ensureValidRoot(root) {
   return next;
 }
 
+export function createEmptyBoard() {
+  return {
+    players: {},
+    availableOrder: [],
+    buckets: { yes: [], maybe: [], no: [] },
+    titles: { available: 'Available', yes: 'YES', maybe: 'MAYBE', no: 'NO' },
+  };
+}
+
 export function addTournament(root, name) {
   const next = JSON.parse(JSON.stringify(root));
   const id = generateId();
   const ts = nowTs();
   next.tournaments[id] = { id, name: name || `Tournament ${Object.keys(next.tournaments).length + 1}`, draftIds: [], createdAt: ts, updatedAt: ts };
-  // Create a first draft
+  // Create a first draft (blank)
   const dId = generateId();
-  next.drafts[dId] = { id: dId, tournamentId: id, name: 'Draft 1', createdAt: ts, updatedAt: ts, ...createDefaultBoard() };
+  next.drafts[dId] = { id: dId, tournamentId: id, name: 'Draft 1', createdAt: ts, updatedAt: ts, ...createEmptyBoard() };
   next.tournaments[id].draftIds.push(dId);
   next.ui.currentTournamentId = id;
   next.ui.currentDraftId = dId;
@@ -180,7 +189,7 @@ export function addDraft(root, tournamentId, name) {
   if (!t) return next;
   const id = generateId();
   const ts = nowTs();
-  next.drafts[id] = { id, tournamentId, name: name || `Draft ${t.draftIds.length + 1}`, createdAt: ts, updatedAt: ts, ...createDefaultBoard() };
+  next.drafts[id] = { id, tournamentId, name: name || `Draft ${t.draftIds.length + 1}`, createdAt: ts, updatedAt: ts, ...createEmptyBoard() };
   t.draftIds.push(id);
   next.ui.currentDraftId = id;
   return next;

@@ -10,6 +10,7 @@ import { createPortal } from 'react-dom';
 import { ArrowDownTrayIcon, ArrowUpTrayIcon, PencilSquareIcon, TrashIcon, ArrowUturnLeftIcon, ArrowLeftIcon, HomeIcon, SunIcon, MoonIcon, PlusIcon, CheckIcon, QuestionMarkCircleIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 import { ensureValidRoot, addTournament, addDraft, addDraftWithBoard, renameTournament, renameDraft, deleteTournament, deleteDraft, duplicateDraft, duplicateTournament, moveDraft, normalizeBoardState } from './lib/storage';
 import { useRootStorage } from './hooks/useRootStorage';
+import DraftBoard from './components/DraftBoard.jsx';
 
 function ModalShell({ open, title, children, onClose }) {
   if (!open) return null;
@@ -149,266 +150,36 @@ function ImportJSONModal({ open, onCancel, onImport, onImportAsNew }) {
   );
 }
 
-function PlayerCard({ id, player, index, onEdit, onRemove, isInAvailable, onAssign, listId }) {
-  const [isHovering, setIsHovering] = useState(false);
-  const [showNameTooltip, setShowNameTooltip] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
-  const nameContainerRef = useRef(null);
-  const menuRef = useRef(null);
-  useEffect(() => {
-    if (!showNameTooltip) return;
-    function onDocMouseDown(e) {
-      if (nameContainerRef.current && !nameContainerRef.current.contains(e.target)) {
-        setShowNameTooltip(false);
-      }
-    }
-    function onWinKeyDown(e) {
-      if (e.key === 'Escape') setShowNameTooltip(false);
-    }
-    document.addEventListener('mousedown', onDocMouseDown);
-    window.addEventListener('keydown', onWinKeyDown);
-    const timer = setTimeout(() => setShowNameTooltip(false), 3000);
-    return () => {
-      document.removeEventListener('mousedown', onDocMouseDown);
-      window.removeEventListener('keydown', onWinKeyDown);
-      clearTimeout(timer);
-    };
-  }, [showNameTooltip]);
-
-  useEffect(() => {
-    if (!showMenu) return;
-    function onDocMouseDown(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setShowMenu(false);
-      }
-    }
-    function onWinKeyDown(e) { if (e.key === 'Escape') setShowMenu(false); }
-    document.addEventListener('mousedown', onDocMouseDown);
-    window.addEventListener('keydown', onWinKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', onDocMouseDown);
-      window.removeEventListener('keydown', onWinKeyDown);
-    };
-  }, [showMenu]);
+function RenameModal({ open, title, initialName, onCancel, onSubmit, label = 'Name' }) {
+  const [name, setName] = useState(initialName || '');
+  useEffect(() => { if (open) setName(initialName || ''); }, [open, initialName]);
+  const disabled = !name.trim();
   return (
-    <Draggable draggableId={id} index={index}>
-      {(provided, snapshot) => {
-        const isActive = isHovering || snapshot.isDragging;
-        const activeRing = isActive ? 'ring-2 ring-brand-400 dark:ring-brand-300 ring-offset-1 ring-offset-white dark:ring-offset-slate-900' : '';
-        const stripeColor = listId==='yes' ? '#34d399' : listId==='maybe' ? '#fbbf24' : listId==='no' ? '#f87171' : '#cbd5e1';
-        const wrapperZ = showMenu ? 'z-[60]' : (isActive ? 'z-40' : 'z-10');
-        const card = (
-          <div ref={provided.innerRef} className={`relative ${wrapperZ} rounded-xl ${activeRing} mb-2 md:mb-2.5`} style={provided.draggableProps.style}>
-            <motion.div
-              {...provided.draggableProps}
-              {...provided.dragHandleProps}
-              initial={false}
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
-              style={{ backgroundImage: `linear-gradient(to right, ${stripeColor} 0, ${stripeColor} 4px, transparent 4px)` }}
-              className={`relative z-10 select-none cursor-grab active:cursor-grabbing bg-white/80 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 backdrop-blur-md rounded-xl shadow-sm hover:shadow-md pl-3 pr-3 py-2.5 md:py-2 flex justify-between items-start transition duration-300 ease-out hover:-translate-y-0.5`}
-            >
-              <div className="flex-1 min-w-0 pr-2">
-                <div ref={nameContainerRef} className="relative">
-                  <div
-                    className="truncate font-semibold text-sm text-slate-800 dark:text-slate-100"
-                    title={player?.name}
-                    aria-label={player?.name}
-                    onClick={() => setShowNameTooltip(v => !v)}
-                  >
-                    {player?.name}
-                  </div>
-                  {showNameTooltip && (
-                    <div role="tooltip" className="absolute left-0 top-full mt-1 z-50 px-2 py-1 rounded-md bg-slate-900 text-white text-xs shadow-lg whitespace-nowrap max-w-none">
-                      {player?.name}
-                    </div>
-                  )}
-                </div>
-                {player?.notes && <div className="truncate text-xs text-slate-500 dark:text-slate-400" title={player?.notes} aria-label={player?.notes}>{player.notes}</div>}
-              </div>
-              <div className="pc-right ml-2 flex items-center gap-2 shrink-0 relative">
-                {/* Quick assign buttons with container query-aware classes */}
-                <div className="pc-actions flex items-center gap-1">
-                  <button type="button" title="Move to YES" aria-label="Move to YES" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition focus-ring dark:bg-emerald-400/15 dark:text-emerald-300 dark:hover:bg-emerald-400/25" onClick={() => onAssign && onAssign(player.id, 'yes')}>
-                    <CheckIcon className="w-4 h-4" />
-                  </button>
-                  <button type="button" title="Move to MAYBE" aria-label="Move to MAYBE" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition focus-ring dark:bg-amber-400/15 dark:text-amber-300 dark:hover:bg-amber-400/25" onClick={() => onAssign && onAssign(player.id, 'maybe')}>
-                    <QuestionMarkCircleIcon className="w-4 h-4" />
-                  </button>
-                  <button type="button" title="Move to NO" aria-label="Move to NO" className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-rose-100 text-rose-700 hover:bg-rose-200 transition focus-ring dark:bg-rose-400/15 dark:text-rose-300 dark:hover:bg-rose-400/25" onClick={() => onAssign && onAssign(player.id, 'no')}>
-                    <XMarkIcon className="w-4 h-4" />
-                  </button>
-                </div>
-                <button type="button" className="pc-kebab h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition focus-ring dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20" title="More" aria-label="More actions" aria-haspopup="menu" aria-expanded={showMenu ? 'true' : 'false'} onClick={() => setShowMenu(v => !v)}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M12 7a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>
-                </button>
-                {showMenu && (
-                  <div ref={menuRef} role="menu" className="absolute right-0 top-9 z-[80] rounded-2xl bg-white/95 dark:bg-slate-800/95 ring-1 ring-slate-200/70 dark:ring-white/10 shadow-xl px-2 py-1 flex items-center gap-1">
-                    <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onAssign && onAssign(player.id, 'yes'); }} title="Move to YES" aria-label="Move to YES">
-                      <CheckIcon className="w-5 h-5 text-emerald-600" />
-                    </button>
-                    <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onAssign && onAssign(player.id, 'maybe'); }} title="Move to MAYBE" aria-label="Move to MAYBE">
-                      <QuestionMarkCircleIcon className="w-5 h-5 text-amber-600" />
-                    </button>
-                    <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onAssign && onAssign(player.id, 'no'); }} title="Move to NO" aria-label="Move to NO">
-                      <XMarkIcon className="w-5 h-5 text-rose-600" />
-                    </button>
-                    <div className="mx-1 h-5 w-px bg-slate-200/70 dark:bg-white/10" />
-                    <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onEdit && onEdit(player); }} title="Edit" aria-label="Edit">
-                      <PencilSquareIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                    </button>
-                    {isInAvailable ? (
-                      <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onRemove && onRemove(player.id); }} title="Delete" aria-label="Delete">
-                        <TrashIcon className="w-5 h-5 text-rose-600" />
-                      </button>
-                    ) : (
-                      <button className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowMenu(false); onRemove && onRemove(player.id); }} title="Send to Available" aria-label="Send to Available">
-                        <ArrowUturnLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                      </button>
-                    )}
-                  </div>
-                )}
-                <button type="button" onClick={() => onEdit(player)} title="Edit" aria-label="Edit" className="pc-actions h-8 w-8 inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition focus-ring dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">
-                  <PencilSquareIcon className="w-4 h-4" />
-                </button>
-                {isInAvailable ? (
-                  <button type="button" onClick={() => onRemove(player.id)} title="Delete player" aria-label="Delete player" className="pc-actions h-8 w-8 inline-flex items-center justify-center rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 transition focus-ring">
-                    <TrashIcon className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <button type="button" onClick={() => onRemove(player.id)} title="Send to Available" aria-label="Send to Available" className="pc-actions h-8 w-8 inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition focus-ring dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">
-                    <ArrowUturnLeftIcon className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        );
-        return snapshot.isDragging ? createPortal(card, document.body) : card;
-      }}
-    </Draggable>
-  );
-}
-
-function Column({ droppableId, title, itemIds, playersMap, onEdit, onRemove, onAssign, getHighlightClass, onTitleChange, bump, pulse }) {
-  const titleColor =
-    droppableId === 'yes' ? 'text-emerald-700 dark:text-emerald-300' :
-    droppableId === 'maybe' ? 'text-amber-700 dark:text-amber-300' :
-    droppableId === 'no' ? 'text-rose-700 dark:text-rose-300' : 'text-slate-800 dark:text-slate-200';
-  const badgeBg =
-    droppableId === 'yes' ? 'bg-emerald-100 text-emerald-700 dark:bg-white/10 dark:text-emerald-300' :
-    droppableId === 'maybe' ? 'bg-amber-100 text-amber-700 dark:bg-white/10 dark:text-amber-300' :
-    droppableId === 'no' ? 'bg-rose-100 text-rose-700 dark:bg-white/10 dark:text-rose-300' : 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-200';
-  const colorHex =
-    droppableId === 'yes' ? '#10B981' :
-    droppableId === 'maybe' ? '#F59E0B' :
-    droppableId === 'no' ? '#EF4444' : '#FFFFFF';
-  const containerGradient = `linear-gradient(135deg, ${colorHex}26 0%, ${colorHex}00 50%, ${colorHex}00 100%)`;
-  const ringClass =
-    droppableId === 'yes' ? 'ring-emerald-500/50' :
-    droppableId === 'maybe' ? 'ring-amber-500/50' :
-    droppableId === 'no' ? 'ring-rose-500/50' : 'ring-[#888888]';
-
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [draftTitle, setDraftTitle] = React.useState(title);
-  React.useEffect(() => { setDraftTitle(title); }, [title]);
-  function commit() { setIsEditing(false); if (draftTitle !== title) onTitleChange?.(droppableId, draftTitle); }
-
-  return (
-    <div className={`min-w-[200px] backdrop-blur-md rounded-2xl p-4 ring-1 ${ringClass} shadow-sm hover:shadow-md transition ${pulse ? 'shimmer-border' : ''}`}
-         style={{ backgroundImage: containerGradient }}>
-      <div className="flex justify-between items-center mb-3">
-        <div className="flex items-center gap-2">
-          {isEditing ? (
-            <input
-              className={`text-base md:text-lg font-extrabold tracking-wide bg-transparent border-b border-slate-300/60 dark:border-white/20 focus:outline-none ${titleColor}`}
-              value={draftTitle}
-              onChange={e => setDraftTitle(e.target.value)}
-              onBlur={commit}
-              onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setIsEditing(false); setDraftTitle(title); } }}
-              autoFocus
-            />
-          ) : (
-            <h3 className={`text-base md:text-lg font-extrabold tracking-wide title-underline ${isEditing ? 'is-editing' : ''} ${titleColor}`}>{title}</h3>
-          )}
-          <button type="button" className="p-1 rounded-md text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-white/10" title="Edit title" aria-label="Edit title" onClick={() => setIsEditing(v => !v)}>
-            <PencilSquareIcon className="w-4 h-4" />
-          </button>
+    <ModalShell open={open} title={title} onClose={onCancel}>
+      <form onSubmit={(e) => { e.preventDefault(); if (disabled) return; onSubmit(name.trim()); }} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{label}</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} autoFocus className="w-full px-3 py-2 rounded-lg border border-slate-200/70 dark:border-white/10 bg-white dark:bg-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" placeholder={`Enter ${label.toLowerCase()}`} />
         </div>
-        <div className={`text-xs px-2 py-0.5 rounded-full ${badgeBg} ${bump ? 'count-bump' : ''}`}>{itemIds.length}</div>
-      </div>
-      <Droppable droppableId={droppableId} direction="vertical" type="PLAYER">
-        {(provided, snapshot) => (
-          <div ref={provided.innerRef} {...provided.droppableProps} className={`cq-list min-h-[200px] rounded-xl transition ring-offset-1 scroll-fade py-3 ${getHighlightClass(droppableId, snapshot.isDraggingOver)}`}
-               style={snapshot.isDraggingOver ? { outline: '2px dotted currentColor', outlineOffset: '2px' } : undefined}>
-            {itemIds.map((id, index) => (
-              <PlayerCard key={id} id={id} index={index} player={playersMap[id]} onEdit={onEdit} onRemove={onRemove} onAssign={onAssign} isInAvailable={false} listId={droppableId} />
-            ))}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
-    </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" onClick={onCancel} className="px-3 py-2 rounded-full bg-slate-200/70 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancel</button>
+          <button type="submit" disabled={disabled} className={`px-3 py-2 rounded-full transition ${disabled ? 'opacity-50 bg-brand-600 text-white' : 'bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700'}`}>Save</button>
+        </div>
+      </form>
+    </ModalShell>
   );
-}
-
-// Helpers
-const STORAGE_KEY = 'squad_draft_v1';
-
-function loadFromStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) {
-    console.error('Load error', e);
-    return null;
-  }
-}
-
-function saveToStorage(state) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.error('Save error', e);
-  }
-}
-
-function defaultState() {
-  const players = {};
-  const sample = ['Alice','Bob','Charlie','Deepa','Ethan','Fatima','Ganesh','Hana'];
-  const availableOrder = sample.map(name => {
-    const id = uuidv4();
-    players[id] = { id, name, notes: '' };
-    return id;
-  });
-  return {
-    players,
-    availableOrder,
-    buckets: { yes: [], maybe: [], no: [] },
-    titles: { available: 'Available', yes: 'YES', maybe: 'MAYBE', no: 'NO' },
-  };
-}
-
-function normalizeState(s) {
-  const next = JSON.parse(JSON.stringify(s));
-  if (!next.titles) next.titles = { available: 'Available', yes: 'YES', maybe: 'MAYBE', no: 'NO' };
-  if (!next.titles.available) next.titles.available = 'Available';
-  if (!next.titles.yes) next.titles.yes = 'YES';
-  if (!next.titles.maybe) next.titles.maybe = 'MAYBE';
-  if (!next.titles.no) next.titles.no = 'NO';
-  return next;
 }
 
 export default function App() {
   // Root (v2) state
   const [root, setRoot] = useRootStorage();
   // Selected draft derived from root
-  const currentDraftId = root.ui.currentDraftId;
-  const currentDraft = root.drafts[currentDraftId];
+  const currentDraftId = root?.ui?.currentDraftId;
+  const currentDraft = currentDraftId ? root?.drafts?.[currentDraftId] : null;
 
-  const [state, setState] = useState(() => normalizeBoardState(currentDraft));
-  const [lastSnapshot, setLastSnapshot] = useState(null);
+  const [state, setState] = useState(() => normalizeBoardState(currentDraft || {}));
+  const [past, setPast] = useState([]); // array of previous states
+  const [future, setFuture] = useState([]); // array of redo states
   const [query, setQuery] = useState('');
   const [dark, setDark] = useState(() => {
     const saved = localStorage.getItem('squad_dark');
@@ -433,18 +204,37 @@ export default function App() {
   // Tournament/Draft menus
   const [showTournamentMenu, setShowTournamentMenu] = useState(false);
   const [showDraftMenu, setShowDraftMenu] = useState(false);
-  const tournamentMenuRef = useRef(null);
-  const draftMenuRef = useRef(null);
+  const tournamentMenuRefDesk = useRef(null);
+  const tournamentMenuRefMobile = useRef(null);
+  const draftMenuRefDesk = useRef(null);
+  const draftMenuRefMobile = useRef(null);
   const [showJSONMenu, setShowJSONMenu] = useState(false);
   const jsonMenuRef = useRef(null);
+  const [renameTournamentOpen, setRenameTournamentOpen] = useState(false);
+  const [renameDraftOpen, setRenameDraftOpen] = useState(false);
 
   const [orgUndo, setOrgUndo] = useState(null); // { snapshot, label }
   function applyOrg(label, mutator) {
     setRoot(prev => {
       const snapshot = JSON.parse(JSON.stringify(prev));
-      const next = mutator(prev);
+      const next = JSON.parse(JSON.stringify(prev));
+      // Persist current local board into root before mutating org structure
+      const did = next?.ui?.currentDraftId;
+      if (did && next.drafts?.[did]) {
+        next.drafts[did] = normalizeBoardState(state);
+        next.drafts[did].updatedAt = Date.now();
+      }
+      const mutated = mutator(next);
+      // Immediately reflect in local board state
+      const newDid = mutated?.ui?.currentDraftId;
+      if (newDid && mutated.drafts?.[newDid]) {
+        setState(normalizeBoardState(mutated.drafts[newDid]));
+      }
+      // Close menus
+      setShowTournamentMenu(false);
+      setShowDraftMenu(false);
       setOrgUndo({ snapshot, label });
-      return next;
+      return ensureValidRoot(mutated);
     });
   }
   function undoOrg() {
@@ -479,17 +269,11 @@ export default function App() {
   }
 
   function promptRenameTournament() {
-    const currentName = activeTournament?.name || '';
-    const name = window.prompt('Rename tournament', currentName);
-    if (!name) return;
-    applyOrg('Renamed tournament', prev => renameTournament(prev, activeTournament.id, name.trim()));
+    setRenameTournamentOpen(true);
   }
 
   function promptRenameDraft() {
-    const currentName = activeDraft?.name || '';
-    const name = window.prompt('Rename draft', currentName);
-    if (!name) return;
-    applyOrg('Renamed draft', prev => renameDraft(prev, activeDraft.id, name.trim()));
+    setRenameDraftOpen(true);
   }
 
   function createTournamentAction() { applyOrg('Created tournament', prev => addTournament(prev)); }
@@ -509,8 +293,16 @@ export default function App() {
   // Close menus on outside click/escape
   useEffect(() => {
     function onDoc(e) {
-      if (showTournamentMenu && tournamentMenuRef.current && !tournamentMenuRef.current.contains(e.target)) setShowTournamentMenu(false);
-      if (showDraftMenu && draftMenuRef.current && !draftMenuRef.current.contains(e.target)) setShowDraftMenu(false);
+      if (showTournamentMenu) {
+        const insideDesk = tournamentMenuRefDesk.current && tournamentMenuRefDesk.current.contains(e.target);
+        const insideMobile = tournamentMenuRefMobile.current && tournamentMenuRefMobile.current.contains(e.target);
+        if (!insideDesk && !insideMobile) setShowTournamentMenu(false);
+      }
+      if (showDraftMenu) {
+        const insideDesk = draftMenuRefDesk.current && draftMenuRefDesk.current.contains(e.target);
+        const insideMobile = draftMenuRefMobile.current && draftMenuRefMobile.current.contains(e.target);
+        if (!insideDesk && !insideMobile) setShowDraftMenu(false);
+      }
       if (showExportMenu && exportMenuRef.current && !exportMenuRef.current.contains(e.target)) setShowExportMenu(false);
       if (showJSONMenu && jsonMenuRef.current && !jsonMenuRef.current.contains(e.target)) setShowJSONMenu(false);
     }
@@ -541,9 +333,11 @@ export default function App() {
 
   // Sync board state when switching drafts
   useEffect(() => {
-    setState(normalizeBoardState(root.drafts[root.ui.currentDraftId]));
+    if (!root?.ui?.currentDraftId) return;
+    const d = root.drafts[root.ui.currentDraftId];
+    if (d) setState(normalizeBoardState(d));
     setIsEditingAvailable(false);
-  }, [root.ui.currentDraftId]);
+  }, [root?.ui?.currentDraftId]);
 
   // Helper: write local board state back into root under current draft
   function writeBoard(updater) {
@@ -558,12 +352,15 @@ export default function App() {
     });
   }
 
-  // Persist local board state changes into root
+  // Debounced autosave for all board changes
   useEffect(() => {
     if (!currentDraft) return;
-    writeBoard(state);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const id = setTimeout(() => writeBoard(state), 150);
+    return () => clearTimeout(id);
   }, [state]);
+
+  // Persist local board state changes into root
+  // Note: writeBoard is now called at mutation points; avoid syncing on every render to prevent loops
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -609,14 +406,21 @@ export default function App() {
     };
   }, [showExportMenu]);
 
-  function snapshotAnd(fn) {
-    setLastSnapshot(JSON.parse(JSON.stringify(state)));
+  function snapshotAnd(fn, { coalesce = false } = {}) {
+    setPast(prev => {
+      const next = [...prev, JSON.parse(JSON.stringify(state))];
+      // Cap history
+      if (next.length > 50) next.shift();
+      return next;
+    });
+    // any new action clears redo stack
+    if (!coalesce) setFuture([]);
     fn();
   }
 
   function clearAll() {
     if (!confirm('Clear all players and draft lists? This cannot be undone.')) return;
-    setLastSnapshot(null);
+    setPast([]); setFuture([]);
     setState({ players: {}, availableOrder: [], buckets: { yes: [], maybe: [], no: [] }, titles: { available: 'Available', yes: 'YES', maybe: 'MAYBE', no: 'NO' } });
   }
 
@@ -625,7 +429,7 @@ export default function App() {
     snapshotAnd(() => setState(prev => {
       const next = JSON.parse(JSON.stringify(prev));
       next.players[id] = { id, name, notes };
-      next.availableOrder.unshift(id);
+      next.availableOrder.push(id);
       return next;
     }));
   }
@@ -656,7 +460,7 @@ export default function App() {
       next.buckets.yes = next.buckets.yes.filter(x => x !== id);
       next.buckets.maybe = next.buckets.maybe.filter(x => x !== id);
       next.buckets.no = next.buckets.no.filter(x => x !== id);
-      if (!next.availableOrder.includes(id)) next.availableOrder.unshift(id);
+      if (!next.availableOrder.includes(id)) next.availableOrder.push(id);
       return next;
     }));
     const p = state.players[id];
@@ -672,8 +476,8 @@ export default function App() {
       next.buckets.yes = next.buckets.yes.filter(x => x !== id);
       next.buckets.maybe = next.buckets.maybe.filter(x => x !== id);
       next.buckets.no = next.buckets.no.filter(x => x !== id);
-      // Add to target bucket at the top
-      next.buckets[bucket].unshift(id);
+      // Add to target bucket at the bottom
+      next.buckets[bucket].push(id);
       return next;
     }));
     const p = state.players[id];
@@ -681,9 +485,23 @@ export default function App() {
   }
 
   function undo() {
-    if (!lastSnapshot) return;
-    setState(lastSnapshot);
-    setLastSnapshot(null);
+    setPast(prev => {
+      if (prev.length === 0) return prev;
+      const previous = prev[prev.length - 1];
+      setFuture(f => [...f, JSON.parse(JSON.stringify(state))]);
+      setState(previous);
+      return prev.slice(0, -1);
+    });
+  }
+
+  function redo() {
+    setFuture(prev => {
+      if (prev.length === 0) return prev;
+      const nextState = prev[prev.length - 1];
+      setPast(p => [...p, JSON.parse(JSON.stringify(state))]);
+      setState(nextState);
+      return prev.slice(0, -1);
+    });
   }
 
   function importCSV(file) {
@@ -697,7 +515,7 @@ export default function App() {
           rows.forEach(r => {
             const id = uuidv4();
             next.players[id] = { id, name: r.name || r.Name || r.NAME || 'Unnamed', notes: r.notes || r.notes || '' };
-            next.availableOrder.unshift(id);
+            next.availableOrder.push(id);
           });
           return next;
         }));
@@ -716,7 +534,7 @@ export default function App() {
           rows.forEach(r => {
             const id = uuidv4();
             next.players[id] = { id, name: r.name || r.Name || r.NAME || 'Unnamed', notes: r.notes || r.Notes || r.NOTES || '' };
-            next.availableOrder.unshift(id);
+            next.availableOrder.push(id);
           });
           return next;
         }));
@@ -999,326 +817,307 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-slate-900 dark:text-slate-100 transition-colors">
-      <div className="w-full md:w-[80vw] mx-auto p-4 space-y-4">
-        {/* Top brand/header bar */}
-        <div className="px-0 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl p-[2px] bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] shadow-[0_0_30px_rgba(124,77,255,0.55)]">
-              <div className="rounded-[12px] px-3 py-1.5 bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] ring-1 ring-[#888888]">
-                <h1 className="text-2xl md:text-3xl font-semibold tracking-wider text-slate-900">Squad Draft</h1>
-              </div>
-            </div>
-            {/* Moved selectors into main header with labels */}
-            <div className="hidden md:flex items-end gap-3 ml-2">
-              <div className="flex flex-col items-start">
-                <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Tournament:</div>
-                <div ref={tournamentMenuRef} className="relative">
-                  <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowTournamentMenu(v => !v)} aria-haspopup="menu" aria-expanded={showTournamentMenu ? 'true' : 'false'} title="Select tournament" aria-label="Select tournament">
-                    <span>{activeTournament?.name || 'Tournament'}</span>
-                  </button>
-                  {showTournamentMenu && (
-                    <div role="menu" className="absolute z-[300] mt-2 w-60 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
-                      {Object.values(root.tournaments).map(t => (
-                        <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowTournamentMenu(false); selectTournament(t.id); }}>{t.name}</button>
-                      ))}
-                      <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
-                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); createTournamentAction(); }}>New tournament</button>
-                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); promptRenameTournament(); }}>Rename tournament</button>
-                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); duplicateTournamentAction(); }}>Duplicate tournament</button>
-                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowTournamentMenu(false); deleteTournamentAction(); }}>Delete tournament</button>
-                    </div>
-                  )}
+      {!currentDraft ? (
+        <div className="p-6 text-sm text-slate-500">Initializing…</div>
+      ) : (
+        <>
+          <div className="w-full md:w-[80vw] mx-auto p-4 space-y-4">
+            {/* Top brand/header bar */}
+            <div className="px-0 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] shadow-[0_0_30px_rgba(124,77,255,0.55)]">
+                  <div className="rounded-[12px] px-3 py-1.5 bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] ring-1 ring-[#888888]">
+                    <h1 className="text-2xl md:text-3xl font-semibold tracking-wider text-slate-900">Squad Draft</h1>
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-col items-start">
-                <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Draft:</div>
-                <div ref={draftMenuRef} className="relative">
-                  <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowDraftMenu(v => !v)} aria-haspopup="menu" aria-expanded={showDraftMenu ? 'true' : 'false'} title="Select draft" aria-label="Select draft">
-                    <span>{activeDraft?.name || 'Draft'}</span>
-                  </button>
-                  {showDraftMenu && (
-                    <div role="menu" className="absolute z-[300] mt-2 w-64 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
-                      {(activeTournament?.draftIds || []).map(did => {
-                        const d = root.drafts[did];
-                        return (
-                          <button key={did} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowDraftMenu(false); selectDraft(did); }}>{d?.name || 'Draft'}</button>
-                        );
-                      })}
-                      <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
-                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); createDraftAction(); }}>New draft</button>
-                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); promptRenameDraft(); }}>Rename draft</button>
-                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); duplicateDraftAction(); }}>Duplicate draft</button>
-                      {Object.values(root.tournaments).length > 1 && (
-                        <div className="px-3 py-2 text-xs text-slate-500">Move to</div>
+                {/* Moved selectors into main header with labels */}
+                <div className="hidden md:flex items-end gap-3 ml-2">
+                  <div className="flex flex-col items-start">
+                    <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Tournament:</div>
+                    <div ref={tournamentMenuRefDesk} className="relative">
+                      <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowTournamentMenu(v => !v)} aria-haspopup="menu" aria-expanded={showTournamentMenu ? 'true' : 'false'} title="Select tournament" aria-label="Select tournament">
+                        <span>{activeTournament?.name || 'Tournament'}</span>
+                      </button>
+                      {showTournamentMenu && (
+                        <div role="menu" className="absolute z-[300] mt-2 w-60 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                          {Object.values(root.tournaments).map(t => (
+                            <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowTournamentMenu(false); selectTournament(t.id); }}>{t.name}</button>
+                          ))}
+                          <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                          <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); createTournamentAction(); }}>New tournament</button>
+                          <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); promptRenameTournament(); }}>Rename tournament</button>
+                          <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); duplicateTournamentAction(); }}>Duplicate tournament</button>
+                          <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowTournamentMenu(false); deleteTournamentAction(); }}>Delete tournament</button>
+                        </div>
                       )}
-                      {Object.values(root.tournaments).filter(t => t.id !== activeTournament?.id).map(t => (
-                        <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); moveDraftTo(t.id); }}>→ {t.name}</button>
-                      ))}
-                      <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
-                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowDraftMenu(false); deleteDraftAction(); }}>Delete draft</button>
                     </div>
-                  )}
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Draft:</div>
+                    <div ref={draftMenuRefDesk} className="relative">
+                      <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowDraftMenu(v => !v)} aria-haspopup="menu" aria-expanded={showDraftMenu ? 'true' : 'false'} title="Select draft" aria-label="Select draft">
+                        <span>{activeDraft?.name || 'Draft'}</span>
+                      </button>
+                      {showDraftMenu && (
+                        <div role="menu" className="absolute z-[300] mt-2 w-64 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                          {(activeTournament?.draftIds || []).map(did => {
+                            const d = root.drafts[did];
+                            return (
+                              <button key={did} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowDraftMenu(false); selectDraft(did); }}>{d?.name || 'Draft'}</button>
+                            );
+                          })}
+                          <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                          <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); createDraftAction(); }}>New draft</button>
+                          <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); promptRenameDraft(); }}>Rename draft</button>
+                          <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); duplicateDraftAction(); }}>Duplicate draft</button>
+                          {Object.values(root.tournaments).length > 1 && (
+                            <div className="px-3 py-2 text-xs text-slate-500">Move to</div>
+                          )}
+                          {Object.values(root.tournaments).filter(t => t.id !== activeTournament?.id).map(t => (
+                            <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); moveDraftTo(t.id); }}>→ {t.name}</button>
+                          ))}
+                          <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                          <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowDraftMenu(false); deleteDraftAction(); }}>Delete draft</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="inline-flex rounded-full p-[2px] bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] shadow-[0_0_26px_rgba(124,77,255,0.55)]">
+                  <a href="/" className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] ring-1 ring-[#888888] text-slate-900 hover:opacity-90 transition focus-ring" title="Home" aria-label="Home">
+                    <HomeIcon className="w-5 h-5" />
+                  </a>
+                </div>
+                <div className="inline-flex rounded-full p-[2px] bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] shadow-[0_0_26px_rgba(124,77,255,0.55)]">
+                  <button onClick={() => setDark(d => !d)} className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] ring-1 ring-[#888888] text-slate-900 hover:opacity-90 transition focus-ring" title={dark ? 'Switch to light' : 'Switch to dark'} aria-label="Toggle theme">
+                    {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-full p-[2px] bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] shadow-[0_0_26px_rgba(124,77,255,0.55)]">
-              <a href="/" className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] ring-1 ring-[#888888] text-slate-900 hover:opacity-90 transition focus-ring" title="Home" aria-label="Home">
-                <HomeIcon className="w-5 h-5" />
-              </a>
-            </div>
-            <div className="inline-flex rounded-full p-[2px] bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] shadow-[0_0_26px_rgba(124,77,255,0.55)]">
-              <button onClick={() => setDark(d => !d)} className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[var(--accent-start)] via-indigo-500 to-[var(--accent-end)] ring-1 ring-[#888888] text-slate-900 hover:opacity-90 transition focus-ring" title={dark ? 'Switch to light' : 'Switch to dark'} aria-label="Toggle theme">
-                {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-        </div>
 
-        {/* Mobile selectors navbar */}
-        <div className="md:hidden relative z-[220] rounded-2xl ring-1 ring-white/10 bg-white/10 backdrop-blur-md px-3 py-2">
-          <div className="flex items-end gap-3 flex-wrap">
-            <div className="flex flex-col items-start">
-              <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Tournament:</div>
-              <div ref={tournamentMenuRef} className="relative">
-                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowTournamentMenu(v => !v)} aria-haspopup="menu" aria-expanded={showTournamentMenu ? 'true' : 'false'} title="Select tournament" aria-label="Select tournament">
-                  <span>{activeTournament?.name || 'Tournament'}</span>
-                </button>
-                {showTournamentMenu && (
-                  <div role="menu" className="absolute z-[300] mt-2 w-60 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
-                    {Object.values(root.tournaments).map(t => (
-                      <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowTournamentMenu(false); selectTournament(t.id); }}>{t.name}</button>
-                    ))}
-                    <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); createTournamentAction(); }}>New tournament</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); promptRenameTournament(); }}>Rename tournament</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); duplicateTournamentAction(); }}>Duplicate tournament</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowTournamentMenu(false); deleteTournamentAction(); }}>Delete tournament</button>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-col items-start">
-              <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Draft:</div>
-              <div ref={draftMenuRef} className="relative">
-                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowDraftMenu(v => !v)} aria-haspopup="menu" aria-expanded={showDraftMenu ? 'true' : 'false'} title="Select draft" aria-label="Select draft">
-                  <span>{activeDraft?.name || 'Draft'}</span>
-                </button>
-                {showDraftMenu && (
-                  <div role="menu" className="absolute z-[300] mt-2 w-64 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
-                    {(activeTournament?.draftIds || []).map(did => {
-                      const d = root.drafts[did];
-                      return (
-                        <button key={did} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowDraftMenu(false); selectDraft(did); }}>{d?.name || 'Draft'}</button>
-                      );
-                    })}
-                    <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); createDraftAction(); }}>New draft</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); promptRenameDraft(); }}>Rename draft</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); duplicateDraftAction(); }}>Duplicate draft</button>
-                    {Object.values(root.tournaments).length > 1 && (
-                      <div className="px-3 py-2 text-xs text-slate-500">Move to</div>
+            {/* Mobile selectors navbar */}
+            <div className="md:hidden relative z-[220] rounded-2xl ring-1 ring-white/10 bg-white/10 backdrop-blur-md px-3 py-2">
+              <div className="flex items-end gap-3 flex-wrap">
+                <div className="flex flex-col items-start">
+                  <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Tournament:</div>
+                  <div ref={tournamentMenuRefMobile} className="relative">
+                    <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowTournamentMenu(v => !v)} aria-haspopup="menu" aria-expanded={showTournamentMenu ? 'true' : 'false'} title="Select tournament" aria-label="Select tournament">
+                      <span>{activeTournament?.name || 'Tournament'}</span>
+                    </button>
+                    {showTournamentMenu && (
+                      <div role="menu" className="absolute z-[300] mt-2 w-60 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                        {Object.values(root.tournaments).map(t => (
+                          <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowTournamentMenu(false); selectTournament(t.id); }}>{t.name}</button>
+                        ))}
+                        <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); createTournamentAction(); }}>New tournament</button>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); promptRenameTournament(); }}>Rename tournament</button>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowTournamentMenu(false); duplicateTournamentAction(); }}>Duplicate tournament</button>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowTournamentMenu(false); deleteTournamentAction(); }}>Delete tournament</button>
+                      </div>
                     )}
-                    {Object.values(root.tournaments).filter(t => t.id !== activeTournament?.id).map(t => (
-                      <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); moveDraftTo(t.id); }}>→ {t.name}</button>
-                    ))}
-                    <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowDraftMenu(false); deleteDraftAction(); }}>Delete draft</button>
                   </div>
-                )}
+                </div>
+                <div className="flex flex-col items-start">
+                  <div className="text-[10px] leading-none mb-1 pl-3 tracking-wide text-slate-600 dark:text-slate-400">Draft:</div>
+                  <div ref={draftMenuRefMobile} className="relative">
+                    <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={() => setShowDraftMenu(v => !v)} aria-haspopup="menu" aria-expanded={showDraftMenu ? 'true' : 'false'} title="Select draft" aria-label="Select draft">
+                      <span>{activeDraft?.name || 'Draft'}</span>
+                    </button>
+                    {showDraftMenu && (
+                      <div role="menu" className="absolute z-[300] mt-2 w-64 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                        {(activeTournament?.draftIds || []).map(did => {
+                          const d = root.drafts[did];
+                          return (
+                            <button key={did} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowDraftMenu(false); selectDraft(did); }}>{d?.name || 'Draft'}</button>
+                          );
+                        })}
+                        <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); createDraftAction(); }}>New draft</button>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); promptRenameDraft(); }}>Rename draft</button>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); duplicateDraftAction(); }}>Duplicate draft</button>
+                        {Object.values(root.tournaments).length > 1 && (
+                          <div className="px-3 py-2 text-xs text-slate-500">Move to</div>
+                        )}
+                        {Object.values(root.tournaments).filter(t => t.id !== activeTournament?.id).map(t => (
+                          <button key={t.id} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setShowDraftMenu(false); moveDraftTo(t.id); }}>→ {t.name}</button>
+                        ))}
+                        <div className="my-1 h-px bg-slate-200/60 dark:bg-white/10"></div>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30" onClick={() => { setShowDraftMenu(false); deleteDraftAction(); }}>Delete draft</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Secondary toolbar */}
-        <header className="relative z-[200] rounded-2xl ring-1 ring-white/10 bg-white/10 backdrop-blur-md px-4 py-3">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Left: Add + Imports */}
-            <div className="flex items-center gap-2">
-              <button className="px-3 py-2 rounded-full bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowAddModal(true)} title="Add player" aria-label="Add player"><PlusIcon className="w-5 h-5" /><span>Add</span></button>
-              <button className="px-3 py-2 rounded-full bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowImportModal(true)} title="Import CSV" aria-label="Import CSV"><ArrowUpTrayIcon className="w-5 h-5" /><span>CSV</span></button>
-              <button className="px-3 py-2 rounded-full bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowImportJSON(true)} title="Import JSON" aria-label="Import JSON"><ArrowUpTrayIcon className="w-5 h-5" /><span>JSON</span></button>
-            </div>
-            {/* Middle: Search */}
-            <div className="flex-1 min-w-[200px] flex justify-end min-[1288px]:justify-center" role="search">
-              <div className="relative w-full max-w-md">
-                <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
-                  ref={searchRef}
-                  className="w-full pl-9 pr-3 py-2 rounded-full border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-800/70 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400"
-                  placeholder="Search across lists"
-                  aria-label="Search across lists"
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
+            {/* Secondary toolbar */}
+            <header className="relative z-[200] rounded-2xl ring-1 ring-white/10 bg-white/10 backdrop-blur-md px-4 py-3">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Left: Add + Imports */}
+                <div className="flex items-center gap-2">
+                  <button className="px-3 py-2 rounded-full bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowAddModal(true)} title="Add player" aria-label="Add player"><PlusIcon className="w-5 h-5" /><span>Add</span></button>
+                  <button className="px-3 py-2 rounded-full bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowImportModal(true)} title="Import CSV" aria-label="Import CSV"><ArrowUpTrayIcon className="w-5 h-5" /><span>CSV</span></button>
+                  <button className="px-3 py-2 rounded-full bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700 shadow-sm transition inline-flex items-center gap-2 text-sm" onClick={() => setShowImportJSON(true)} title="Import JSON" aria-label="Import JSON"><ArrowUpTrayIcon className="w-5 h-5" /><span>JSON</span></button>
+                </div>
+                {/* Middle: Search */}
+                <div className="flex-1 min-w-[200px] flex justify-end min-[1288px]:justify-center" role="search">
+                  <div className="relative w-full max-w-md">
+                    <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input
+                      ref={searchRef}
+                      className="w-full pl-9 pr-3 py-2 rounded-full border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-800/70 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400"
+                      placeholder="Search across lists"
+                      aria-label="Search across lists"
+                      value={query}
+                      onChange={e => setQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
+                {/* Right: Exports + Undo + Clear */}
+                <div className="md:ml-auto flex items-center gap-2 flex-wrap relative w-full min-[1288px]:w-auto justify-start min-[1288px]:justify-end">
+                  {/* Mobile: Export dropdown */}
+                  <div ref={exportMenuRef} className="relative md:hidden">
+                    <button
+                      className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20"
+                      onClick={() => setShowExportMenu(v => !v)}
+                      aria-haspopup="menu"
+                      aria-expanded={showExportMenu ? 'true' : 'false'}
+                      title="Export"
+                      aria-label="Export"
+                    >
+                      <ArrowDownTrayIcon className="w-5 h-5" />
+                      <span>Export</span>
+                    </button>
+                    {showExportMenu && (
+                      <div role="menu" className="absolute z-[120] mt-2 w-40 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportCSV(); }} aria-label="Export CSV">CSV</button>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportPNG(); }} aria-label="Export PNG">PNG</button>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportPDF(); }} aria-label="Export PDF">PDF</button>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportJSON(); }} aria-label="Export JSON">Draft JSON</button>
+                        <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportTournamentJSON(); }} aria-label="Export Tournament JSON">Tournament JSON</button>
+                      </div>
+                    )}
+                  </div>
+                  {/* Desktop: Export buttons */}
+                  <div className="hidden md:flex items-center gap-2">
+                    <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportCSV} title="Export CSV" aria-label="Export CSV"><ArrowDownTrayIcon className="w-5 h-5" /><span>CSV</span></button>
+                    <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportPNG} title="Export PNG" aria-label="Export PNG"><ArrowDownTrayIcon className="w-5 h-5" /><span>PNG</span></button>
+                    <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportPDF} title="Export PDF" aria-label="Export PDF"><ArrowDownTrayIcon className="w-5 h-5" /><span>PDF</span></button>
+                    {/* JSON dropdown (desktop) */}
+                    <div className="relative" ref={jsonMenuRef}>
+                      <button
+                        className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20"
+                        onClick={() => setShowJSONMenu(v => !v)}
+                        aria-haspopup="menu"
+                        aria-expanded={showJSONMenu ? 'true' : 'false'}
+                        title="Export JSON"
+                        aria-label="Export JSON"
+                      >
+                        <ArrowDownTrayIcon className="w-5 h-5" />
+                        <span>JSON</span>
+                      </button>
+                      {showJSONMenu && (
+                        <div role="menu" className="absolute z-[200] mt-2 w-44 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
+                          <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowJSONMenu(false); exportJSON(); }} aria-label="Export Draft JSON">Draft</button>
+                          <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowJSONMenu(false); exportTournamentJSON(); }} aria-label="Export Tournament JSON">Tournament</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button onClick={undo} disabled={past.length === 0} className={`${past.length ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'} px-3 py-2 rounded-full shadow-sm transition inline-flex items-center justify-center focus-ring`} title="Undo" aria-label="Undo">
+                    <ArrowUturnLeftIcon className="w-5 h-5" />
+                  </button>
+                  <button onClick={redo} disabled={future.length === 0} className={`${future.length ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'} px-3 py-2 rounded-full shadow-sm transition inline-flex items-center justify-center focus-ring`} title="Redo" aria-label="Redo">
+                    <ArrowUturnLeftIcon className="w-5 h-5 rotate-180" />
+                  </button>
+                  <button onClick={clearAll} className="px-3 py-2 rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm transition text-sm focus-ring" title="Clear Draft" aria-label="Clear Draft">Clear</button>
+                </div>
+              </div>
+            </header>
+
+            <main className="flex gap-4">
+              <div className="flex-1">
+                <DraftBoard
+                  state={state}
+                  query={query}
+                  onEdit={handleEdit}
+                  onRemove={handleRemove}
+                  onAssign={assignToBucket}
+                  onUpdateTitle={(id, val) => { updateTitle(id, val); if (id==='available') setPulseAvailable(true); if (id==='yes') setPulseYes(true); if (id==='maybe') setPulseMaybe(true); if (id==='no') setPulseNo(true);} }
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                  announce={announce}
+                  boardRef={boardRef}
                 />
               </div>
-            </div>
-            {/* Right: Exports + Undo + Clear */}
-            <div className="md:ml-auto flex items-center gap-2 flex-wrap relative w-full min-[1288px]:w-auto justify-start min-[1288px]:justify-end">
-              {/* Mobile: Export dropdown */}
-              <div ref={exportMenuRef} className="relative md:hidden">
-                <button
-                  className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20"
-                  onClick={() => setShowExportMenu(v => !v)}
-                  aria-haspopup="menu"
-                  aria-expanded={showExportMenu ? 'true' : 'false'}
-                  title="Export"
-                  aria-label="Export"
-                >
-                  <ArrowDownTrayIcon className="w-5 h-5" />
-                  <span>Export</span>
-                </button>
-                {showExportMenu && (
-                  <div role="menu" className="absolute z-[120] mt-2 w-40 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportCSV(); }} aria-label="Export CSV">CSV</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportPNG(); }} aria-label="Export PNG">PNG</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportPDF(); }} aria-label="Export PDF">PDF</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportJSON(); }} aria-label="Export JSON">Draft JSON</button>
-                    <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowExportMenu(false); exportTournamentJSON(); }} aria-label="Export Tournament JSON">Tournament JSON</button>
-                  </div>
-                )}
+
+              {/* Analytics panel intentionally commented out */}
+            </main>
+
+            {/* A11y live region */}
+            <div ref={liveRef} className="sr-only" aria-live="polite" role="status"></div>
+
+            {/* Org Undo Toast */}
+            {orgUndo && (
+              <div className="fixed left-4 bottom-4 z-[300] rounded-xl bg-slate-900/90 text-white px-3 py-2 shadow-lg ring-1 ring-white/10 flex items-center gap-3">
+                <span className="text-sm">{orgUndo.label}. <span className="opacity-80">Undo?</span></span>
+                <button onClick={undoOrg} className="px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-sm">Undo</button>
+                <button onClick={() => setOrgUndo(null)} className="px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-sm">Dismiss</button>
               </div>
-              {/* Desktop: Export buttons */}
-              <div className="hidden md:flex items-center gap-2">
-                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportCSV} title="Export CSV" aria-label="Export CSV"><ArrowDownTrayIcon className="w-5 h-5" /><span>CSV</span></button>
-                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportPNG} title="Export PNG" aria-label="Export PNG"><ArrowDownTrayIcon className="w-5 h-5" /><span>PNG</span></button>
-                <button className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20" onClick={exportPDF} title="Export PDF" aria-label="Export PDF"><ArrowDownTrayIcon className="w-5 h-5" /><span>PDF</span></button>
-                {/* JSON dropdown (desktop) */}
-                <div className="relative" ref={jsonMenuRef}>
-                  <button
-                    className="px-3 py-2 rounded-full bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 transition inline-flex items-center gap-2 text-sm focus-ring dark:bg-white/10 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/20"
-                    onClick={() => setShowJSONMenu(v => !v)}
-                    aria-haspopup="menu"
-                    aria-expanded={showJSONMenu ? 'true' : 'false'}
-                    title="Export JSON"
-                    aria-label="Export JSON"
-                  >
-                    <ArrowDownTrayIcon className="w-5 h-5" />
-                    <span>JSON</span>
-                  </button>
-                  {showJSONMenu && (
-                    <div role="menu" className="absolute z-[200] mt-2 w-44 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200/60 dark:ring-white/10 shadow-lg p-1">
-                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowJSONMenu(false); exportJSON(); }} aria-label="Export Draft JSON">Draft</button>
-                      <button className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 focus-ring" onClick={() => { setShowJSONMenu(false); exportTournamentJSON(); }} aria-label="Export Tournament JSON">Tournament</button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <button onClick={undo} disabled={!lastSnapshot} className={`${lastSnapshot ? 'bg-yellow-500 text-white hover:bg-yellow-400' : 'opacity-50 bg-slate-200 text-slate-500'} px-3 py-2 rounded-full shadow-sm transition inline-flex items-center justify-center focus-ring`} title="Undo" aria-label="Undo">
-                <ArrowUturnLeftIcon className="w-5 h-5" />
-              </button>
-              <button onClick={clearAll} className="px-3 py-2 rounded-full bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm transition text-sm focus-ring" title="Clear Draft" aria-label="Clear Draft">Clear</button>
-            </div>
+            )}
+
+            {/* Modals */}
+            <AddPlayerModal
+              open={showAddModal}
+              onCancel={() => setShowAddModal(false)}
+              onSubmit={({ name, notes }) => { setShowAddModal(false); addPlayer(name, notes); }}
+            />
+
+            <EditPlayerModal
+              open={!!editingPlayer}
+              player={editingPlayer}
+              onCancel={() => setEditingPlayer(null)}
+              onSubmit={(p) => { setEditingPlayer(null); editPlayer(p); }}
+            />
+
+            <ImportCSVModal
+              open={showImportModal}
+              onCancel={() => setShowImportModal(false)}
+              onImport={(text) => { setShowImportModal(false); importCSVText(text); }}
+            />
+
+            <ImportJSONModal
+              open={showImportJSON}
+              onCancel={() => setShowImportJSON(false)}
+              onImport={(text) => { setShowImportJSON(false); importJSONText(text, 'replace'); }}
+              onImportAsNew={(text) => { setShowImportJSON(false); importJSONText(text, 'new-draft'); }}
+            />
+
+            <RenameModal
+              open={renameTournamentOpen}
+              title="Rename Tournament"
+              initialName={activeTournament?.name || ''}
+              label="Tournament name"
+              onCancel={() => setRenameTournamentOpen(false)}
+              onSubmit={(name) => { setRenameTournamentOpen(false); applyOrg('Renamed tournament', prev => renameTournament(prev, activeTournament.id, name)); }}
+            />
+
+            <RenameModal
+              open={renameDraftOpen}
+              title="Rename Draft"
+              initialName={activeDraft?.name || ''}
+              label="Draft name"
+              onCancel={() => setRenameDraftOpen(false)}
+              onSubmit={(name) => { setRenameDraftOpen(false); applyOrg('Renamed draft', prev => renameDraft(prev, activeDraft.id, name)); }}
+            />
+
           </div>
-        </header>
-
-        <main className="flex gap-4">
-          <div className="flex-1">
-            <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-0 noise-overlay rounded-2xl"></div>
-                <div className="pointer-events-none absolute inset-0 vignette-overlay rounded-2xl"></div>
-                <div ref={boardRef} className="relative grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-4 gap-4">
-                  {/* Available */}
-                  <div>
-                    <div className={`min-w-[200px] ${pulseAvailable ? 'shimmer-border' : ''} backdrop-blur-md rounded-2xl p-4 ring-1 ring-[#888888] shadow-sm hover:shadow-md transition`}
-                         style={{ backgroundImage: 'linear-gradient(135deg, #FFFFFF26 0%, #FFFFFF00 50%, #FFFFFF00 100%)' }}>
-                      <div className="flex justify-between items-center mb-3">
-                        <div className="flex items-center gap-2">
-                          {isEditingAvailable ? (
-                            <input
-                              className="text-base md:text-lg font-extrabold tracking-wide bg-transparent border-b border-slate-300/60 dark:border-white/20 focus:outline-none text-slate-800 dark:text-slate-200"
-                              value={draftAvailableTitle}
-                              onChange={e => setDraftAvailableTitle(e.target.value)}
-                              onBlur={commitAvailable}
-                              onKeyDown={e => { if (e.key === 'Enter') commitAvailable(); if (e.key === 'Escape') { setIsEditingAvailable(false); setDraftAvailableTitle(state.titles.available || 'Available'); } }}
-                              autoFocus
-                            />
-                          ) : (
-                            <h3 className="text-base md:text-lg font-extrabold tracking-wide text-slate-800 dark:text-slate-200">{state.titles.available}</h3>
-                          )}
-                          <button type="button" className="p-1 rounded-md text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-white/10" title="Edit title" aria-label="Edit title" onClick={() => setIsEditingAvailable(v => !v)}>
-                            <PencilSquareIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-200">{filtered.availableOrder.length}</div>
-                      </div>
-                      <Droppable droppableId="available" direction="vertical" type="PLAYER">
-                        {(provided, snapshot) => (
-                          <div ref={provided.innerRef} {...provided.droppableProps} className={`cq-list min-h-[200px] rounded-xl transition ring-offset-1 scroll-fade py-3 ${getHighlightClass('available', snapshot.isDraggingOver)}`}
-                               style={snapshot.isDraggingOver ? { outline: '2px dotted currentColor', outlineOffset: '2px' } : undefined}>
-                            {filtered.availableOrder.map((id, index) => (
-                              <PlayerCard key={id} id={id} index={index} player={filtered.players[id]} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} isInAvailable listId="available" />
-                            ))}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    </div>
-                  </div>
-
-                  {/* YES */}
-                  <div>
-                    <Column droppableId="yes" title={state.titles.yes} itemIds={filtered.buckets.yes} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={(id, t)=>{updateTitle(id,t); setPulseYes(true);}} bump={pulseYes} pulse={pulseYes} />
-                  </div>
-                  {/* MAYBE */}
-                  <div>
-                    <Column droppableId="maybe" title={state.titles.maybe} itemIds={filtered.buckets.maybe} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={(id, t)=>{updateTitle(id,t); setPulseMaybe(true);}} bump={pulseMaybe} pulse={pulseMaybe} />
-                  </div>
-                  {/* NO */}
-                  <div>
-                    <Column droppableId="no" title={state.titles.no} itemIds={filtered.buckets.no} playersMap={filtered.players} onEdit={handleEdit} onRemove={handleRemove} onAssign={assignToBucket} getHighlightClass={getHighlightClass} onTitleChange={(id, t)=>{updateTitle(id,t); setPulseNo(true);}} bump={pulseNo} pulse={pulseNo} />
-                  </div>
-                </div>
-              </div>
-            </DragDropContext>
-          </div>
-
-          {/* Analytics panel intentionally commented out */}
-        </main>
-
-        {/* A11y live region */}
-        <div ref={liveRef} className="sr-only" aria-live="polite" role="status"></div>
-
-        {/* Org Undo Toast */}
-        {orgUndo && (
-          <div className="fixed left-4 bottom-4 z-[300] rounded-xl bg-slate-900/90 text-white px-3 py-2 shadow-lg ring-1 ring-white/10 flex items-center gap-3">
-            <span className="text-sm">{orgUndo.label}. <span className="opacity-80">Undo?</span></span>
-            <button onClick={undoOrg} className="px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-sm">Undo</button>
-            <button onClick={() => setOrgUndo(null)} className="px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-sm">Dismiss</button>
-          </div>
-        )}
-
-        {/* Modals */}
-        <AddPlayerModal
-          open={showAddModal}
-          onCancel={() => setShowAddModal(false)}
-          onSubmit={({ name, notes }) => { setShowAddModal(false); addPlayer(name, notes); }}
-        />
-
-        <EditPlayerModal
-          open={!!editingPlayer}
-          player={editingPlayer}
-          onCancel={() => setEditingPlayer(null)}
-          onSubmit={(p) => { setEditingPlayer(null); editPlayer(p); }}
-        />
-
-        <ImportCSVModal
-          open={showImportModal}
-          onCancel={() => setShowImportModal(false)}
-          onImport={(text) => { setShowImportModal(false); importCSVText(text); }}
-        />
-
-        <ImportJSONModal
-          open={showImportJSON}
-          onCancel={() => setShowImportJSON(false)}
-          onImport={(text) => { setShowImportJSON(false); importJSONText(text, 'replace'); }}
-          onImportAsNew={(text) => { setShowImportJSON(false); importJSONText(text, 'new-draft'); }}
-        />
-
-      </div>
+        </>
+      )}
     </div>
   );
 }
